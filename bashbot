@@ -49,7 +49,7 @@ do
     then
         case "$MESSAGE" in
 
-            /weather|[Пп]огода)
+            /weather)
 
                 RAW_WEATHER=$( curl -s "$WEATHER_REQUEST" )
                        TEMP=$( jq .data.current_condition[0].temp_C           <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | sed '/^[0-9]/s/^/%2B/')
@@ -68,6 +68,9 @@ do
                       You can see the code here https://github.com/Cuttlerat/bashbot
                       by @Cuttlerat" )
                 send_text
+                ;;
+            *)
+                [[ "$SENDER" == "hotkosc" ]] && TEXT="Збсь" && send_text;
                 ;;
 
         esac
