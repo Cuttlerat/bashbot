@@ -69,9 +69,6 @@ do
                       by @Cuttlerat" )
                 send_text
                 ;;
-            *)
-                [[ "$SENDER" == "hotkosc" ]] && TEXT="Збсь" && send_text;
-                ;;
 
         esac
         LAST_ID="$MESSAGE_ID"
