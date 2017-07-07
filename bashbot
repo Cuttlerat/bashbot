@@ -30,7 +30,7 @@ function _send_text {
 function _weather_request {
 curl -s $( tr -d " \n" <<< \
                  "https://api.worldweatheronline.com/premium/v1/weather.ashx?
-                              q=${LOCATION:="Saint-Petersburg"}&
+                              q=${LOCATION:="Ленинград"}&
                               key=$WEATHER_KEY&
                               format=json&
                               date=today&
