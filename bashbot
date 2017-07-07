@@ -62,7 +62,10 @@ do
 
             /start|/info)
 
-                TEXT="This is my own bot writed on Bash. @Cuttlerat"
+                TEXT=$( sed 's/^\s\+//' <<< \
+                     "This is my first bot on Bash.
+                      You can see the code here https://github.com/Cuttlerat/bashbot
+                      by @Cuttlerat" )
                 send_text
                 ;;
 
