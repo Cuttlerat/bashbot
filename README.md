@@ -27,4 +27,5 @@ docker run bashbot <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
 Токен для погоды брать здесь: https://www.worldweatheronline.com/
+
 Зарегестрировать бота здесь: https://telegram.me/BotFather
