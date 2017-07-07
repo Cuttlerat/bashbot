@@ -16,6 +16,8 @@
              URL="https://api.telegram.org/bot$KEY"
          LOGFILE="/var/log/telebot.log"
      WEATHER_KEY="<INSERT YOUR KEY HERE>"        # https://www.worldweatheronline.com/
+         BOTNAME="@$( curl -s "$URL/getMe" |     \
+                      jq .result.username  | tr -d '"' )"
  WEATHER_REQUEST=$( tr -d " \n" <<< \
                  "https://api.worldweatheronline.com/premium/v1/weather.ashx?
                               key=$WEATHER_KEY&
@@ -35,12 +37,13 @@ function send_text {
 
 #===========================================================================
 
+
 while sleep 1;
 do
     RAW_MESSAGE=$( curl -s "$URL/getUpdates?offset=-1" )
      MESSAGE_ID=$( jq .result[0].message.message_id    <<< "$RAW_MESSAGE" )
         CHAT_ID=$( jq .result[0].message.chat.id       <<< "$RAW_MESSAGE" )
-        MESSAGE=$( jq .result[0].message.text          <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' )
+        MESSAGE=$( jq .result[0].message.text          <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' | sed "/^\//s/$BOTNAME//")
          SENDER=$( jq .result[0].message.from.username <<< "$RAW_MESSAGE" | tr -d '"' )
 
     if [[ "$MESSAGE_ID" -ne "$LAST_ID" ]] 
