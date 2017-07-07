@@ -21,7 +21,6 @@
 Для того чтобы собрать и запустить свой Docker контейнер
 
 ```
-cd Docker
 docker build -t bashbot .
 docker run bashbot <BOT_TOKEN> <WEATHER_TOKEN>
 ```
