@@ -47,7 +47,7 @@ do
      MESSAGE_ID=$( jq .result[0].message.message_id    <<< "$RAW_MESSAGE" )
         CHAT_ID=$( jq .result[0].message.chat.id       <<< "$RAW_MESSAGE" )
         MESSAGE=$( jq .result[0].message.text          <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' | sed "/^\//s/$BOTNAME//" )
-       LOCATION=$( sed -r "s/\/weather($BOTNAME)? ?//"  <<< "$MESSAGE"     | sed 's/\s/%2B/g' )
+       LOCATION=$( sed -r "s/\/weather($BOTNAME)? ?//" <<< "$MESSAGE"     | sed 's/\s/%2B/g' )
         MESSAGE=$( sed 's/ .*//'                       <<< "$MESSAGE" )
          SENDER=$( jq .result[0].message.from.username <<< "$RAW_MESSAGE" | tr -d '"' )
 
