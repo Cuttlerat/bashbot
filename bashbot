@@ -44,29 +44,29 @@ curl -s $( tr -d " \n" <<< \
 while sleep 1;
 do
     RAW_MESSAGE=$( curl -s "$URL/getUpdates?offset=-1" )
-     MESSAGE_ID=$( jq .result[0].message.message_id    <<< "$RAW_MESSAGE" )
-        CHAT_ID=$( jq .result[0].message.chat.id       <<< "$RAW_MESSAGE" )
-        MESSAGE=$( jq .result[0].message.text          <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' | sed -r "s/$BOTNAME//" )
-       LOCATION=$( sed 's/\/weather \?//;s/ /%2B/g'    <<< "$MESSAGE"     )
-        MESSAGE=$( sed 's/ .*//'                       <<< "$MESSAGE"     )
-         SENDER=$( jq .result[0].message.from.username <<< "$RAW_MESSAGE" | tr -d '"' )
+     MESSAGE_ID=$( jq .result[0].message.message_id        <<< "$RAW_MESSAGE" )
+        CHAT_ID=$( jq .result[0].message.chat.id           <<< "$RAW_MESSAGE" )
+        MESSAGE=$( jq .result[0].message.text              <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' | sed -r "s/$BOTNAME//" )
+       LOCATION=$( sed -r 's/\/(w|weather) ?//;s/ /%2B/g'  <<< "$MESSAGE"     )
+        MESSAGE=$( awk '{print $1}'                        <<< "$MESSAGE"     )
+         SENDER=$( jq .result[0].message.from.username     <<< "$RAW_MESSAGE" | tr -d '"' )
 
     if [[ "$MESSAGE_ID" -ne "$LAST_ID" ]] 
     then
         case "$MESSAGE" in
 
-            /weather)
+            /w|/weather)
 
-                RAW_WEATHER="$( _weather_request )"
+                RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq .data.current_condition[0].temp_C           <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | sed '/^[0-9]/s/^/%2B/')
                     COMMENT=$( jq .data.current_condition[0].lang_ru[0].value <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' )
                        CITY=$( jq .data.request[0].query                      <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' )
                 UPDATE_TIME=$( jq .data.current_condition[0].observation_time <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" )
+
                 if [ "$CITY" == "null" -o "$CITY" == "" ] 
                 then
                     TEXT="Wrong location!"
                 else
-
                     TEXT="[$UPDATE_TIME]: $TEMP $COMMENT%0A$CITY"
                 fi
 
@@ -74,7 +74,7 @@ do
                              "$( date +"[%H:%M]: \"" )${TEXT//%0A/ }\" to @$SENDER"
                 ;;
 
-            /start|/info)
+           /start|/info)
 
                 TEXT=$( sed 's/^\s\+//' <<< \
                      "This is my first bot on Bash.
