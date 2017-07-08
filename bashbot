@@ -47,7 +47,8 @@ do
      MESSAGE_ID=$( jq .result[0].message.message_id    <<< "$RAW_MESSAGE" )
         CHAT_ID=$( jq .result[0].message.chat.id       <<< "$RAW_MESSAGE" )
         MESSAGE=$( jq .result[0].message.text          <<< "$RAW_MESSAGE" | sed 's/^"\|"$//g' | sed -r "s/$BOTNAME//" )
-       LOCATION=$( sed 's/\/weather \?//;s/ /%2B/g'    <<< "$MESSAGE"     )
+       LOCATION=$( sed -r 's/\/(w|weather) ?//;
+                                s/^ +//;s/ /%2B/g'     <<< "$MESSAGE"     )
         MESSAGE=$( sed 's/ .*//'                       <<< "$MESSAGE"     )
          SENDER=$( jq .result[0].message.from.username <<< "$RAW_MESSAGE" | tr -d '"' )
 
@@ -55,7 +56,7 @@ do
     then
         case "$MESSAGE" in
 
-            /weather)
+             /w|/weather)
 
                 RAW_WEATHER="$( _weather_request )"
                        TEMP=$( jq .data.current_condition[0].temp_C           <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | sed '/^[0-9]/s/^/%2B/')
