@@ -6,7 +6,8 @@
 Если вы знаете какой контейнер лучше использовать за основу вместо Debian (все что мне нужно это наличие jq и curl) просьба, дайте мне знать
 
 ```
-/weather
+/weather City
+/w City # Short form
 /info
 /start
 ```
@@ -28,6 +29,11 @@ docker build -t bashbot .
 docker run bashbot <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
+Также вы можете взять готовый контейнер с Dockerhub, для этого просто сделайте
+
+```
+docker run cuttlerat/bashbot <BOT_TOKEN> <WEATHER_TOKEN>
+```
 
 Токен для погоды брать здесь: https://www.worldweatheronline.com/ <br>
 Зарегистрировать бота здесь: https://telegram.me/BotFather
