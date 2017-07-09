@@ -63,7 +63,8 @@ do
                        TEMP=$( jq .data.current_condition[0].temp_C           <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | sed '/^[0-9]/s/^/%2B/')
                     COMMENT=$( jq .data.current_condition[0].lang_ru[0].value <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' )
                        CITY=$( jq .data.request[0].query                      <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' )
-                UPDATE_TIME=$( jq .data.current_condition[0].observation_time <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' | xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" )
+                UPDATE_TIME=$( jq .data.current_condition[0].observation_time <<< "$RAW_WEATHER" | sed 's/^"\|"$//g' \
+                             | xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" 2>/dev/null )
 
                 if [ "$CITY" == "null" -o "$CITY" == "" ] 
                 then
@@ -72,11 +73,11 @@ do
                     TEXT="[$UPDATE_TIME]: $TEMP $COMMENT%0A$CITY"
                 fi
 
-                _send_text && sed 's/%2B/+/g' <<<                             \
+                _send_text && sed 's/%2B/+/g' <<<                               \
                              "$( date +"[%H:%M]: \"" )${TEXT//%0A/ }\" to @$SENDER"
                 ;;
 
-           /start|/info)
+           /info)
 
                 TEXT=$( sed 's/^\s\+//' <<< \
                      "This is my first bot on Bash.
@@ -85,7 +86,17 @@ do
                 _send_text
                 ;;
 
+           /start)
+
+                TEXT=$( sed 's/^\s\+//' <<< \
+                     'Enter "/weather (or /w) City" to see what temprature is there for now
+
+                      Example: /w London' )
+                _send_text
+                ;;
+
         esac
+
         LAST_ID="$MESSAGE_ID"
     fi
 done
