@@ -1,7 +1,8 @@
-FROM debian:latest
+FROM alpine:latest
 ENV TZ=Europe/Moscow
 COPY bashbot /
-RUN     apt-get update      \
-     && apt-get install -y  \
-        jq curl
+RUN  apk add --update --no-cache             \
+     jq curl bash sed coreutils tzdata       \
+  && cp /usr/share/zoneinfo/Europe/Moscow    \
+     /etc/localtime
 ENTRYPOINT ["/bashbot"]
