@@ -50,6 +50,7 @@ do
         MESSAGE=$( jq  -r .result[0].message.text          <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
        LOCATION=$( sed -r 's/\/(w|weather) ?//;
                                 s/^ +//;s/ /%2B/g'         <<< "${MESSAGE}"     )
+            CMD=$( sed -r 's/\/cmd //'                     <<< "${MESSAGE}"     )
         MESSAGE=$( awk '{print $1}'                        <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[0].message.from.username <<< "${RAW_MESSAGE}" )
 
@@ -92,6 +93,12 @@ do
                      'Enter "/weather (or /w) City" to see what temprature is there for now
 
                       Example: /w London' )
+                _send_text
+                ;;
+
+           /cmd)
+
+               TEXT=$(${CMD//—/--})
                 _send_text
                 ;;
 
