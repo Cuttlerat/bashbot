@@ -6,10 +6,10 @@
 Если вы знаете какой контейнер лучше использовать за основу вместо Debian (все что мне нужно это наличие jq и curl) просьба, дайте мне знать
 
 ```
-/weather City
-/w City # Short form
-/info
-/start
+/weather City   # Weather in city for now
+/w City         # Short form of /w
+/info           # Information about bot
+/start          # Information about commands
 ```
 
 Но список команд будет со временем расти
@@ -29,7 +29,7 @@ docker build -t bashbot .
 docker run bashbot <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
-Также вы можете взять готовый контейнер с Dockerhub, для этого просто сделайте
+Также вы можете взять готовый контейнер с Dockerhub
 
 ```
 docker run cuttlerat/bashbot <BOT_TOKEN> <WEATHER_TOKEN>
