@@ -14,28 +14,28 @@
              KEY="$1"
      WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
          TIMEOUT="10"
-             URL="https://api.telegram.org/bot$KEY"
-         BOTNAME="@$( curl -s "$URL/getMe" |     \
+             URL="https://api.telegram.org/bot${KEY}"
+         BOTNAME="@$( curl -s "${URL}/getMe" |     \
                       jq .result.username  | tr -d '"' )"
 
 #==========FUNCTIONS========================================================
 
 function _send_text {
-    curl -s --max-time "$TIMEOUT"                                       \
+    curl -s --max-time "${TIMEOUT}"                                       \
             --output /dev/null                                          \
-            -d "chat_id=$CHAT_ID&disable_web_page_preview=1&text=$TEXT" \
-            "$URL/sendMessage"
+            -d "chat_id=${CHAT_ID}&disable_web_page_preview=1&text=${TEXT}" \
+            "${URL}/sendMessage"
 }
 
 function _weather_request {
-curl -s $( tr -d " \n" <<< \
+curl -s "$( tr -d " \n" <<< \
                  "https://api.worldweatheronline.com/premium/v1/weather.ashx?
                               q=${LOCATION:="Ленинград"}&
-                              key=$WEATHER_KEY&
+                              key=${WEATHER_KEY}&
                               format=json&
                               date=today&
                               fx24=yes&
-                              lang=ru" )
+                              lang=ru" )"
 }
 
 #===========================================================================
@@ -44,42 +44,42 @@ curl -s $( tr -d " \n" <<< \
 while sleep 1;
 do
 
-    RAW_MESSAGE=$( curl -s "$URL/getUpdates?offset=-1" )
-     MESSAGE_ID=$( jq .result[0].message.message_id        <<< "$RAW_MESSAGE" )
-        CHAT_ID=$( jq .result[0].message.chat.id           <<< "$RAW_MESSAGE" )
-        MESSAGE=$( jq  -r .result[0].message.text          <<< "$RAW_MESSAGE" | sed -r "s/$BOTNAME//" )
+    RAW_MESSAGE=$( curl -s "${URL}/getUpdates?offset=-1" )
+     MESSAGE_ID=$( jq .result[0].message.message_id        <<< "${RAW_MESSAGE}" )
+        CHAT_ID=$( jq .result[0].message.chat.id           <<< "${RAW_MESSAGE}" )
+        MESSAGE=$( jq  -r .result[0].message.text          <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
        LOCATION=$( sed -r 's/\/(w|weather) ?//;
-                                s/^ +//;s/ /%2B/g'         <<< "$MESSAGE"     )
-        MESSAGE=$( awk '{print $1}'                        <<< "$MESSAGE"     )
-         SENDER=$( jq  -r .result[0].message.from.username <<< "$RAW_MESSAGE" )
+                                s/^ +//;s/ /%2B/g'         <<< "${MESSAGE}"     )
+        MESSAGE=$( awk '{print $1}'                        <<< "${MESSAGE}"     )
+         SENDER=$( jq  -r .result[0].message.from.username <<< "${RAW_MESSAGE}" )
 
-    if [[ "$MESSAGE_ID" -ne "$LAST_ID" ]] 
+    if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]] 
     then
-        case "$MESSAGE" in
+        case "${MESSAGE}" in
 
             /w|/weather)
 
                 RAW_WEATHER=$( _weather_request )
-                       TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "$RAW_WEATHER" | sed '/^[0-9]/s/^/%2B/' )
-                    COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "$RAW_WEATHER" )
-                       CITY=$( jq -r .data.request[0].query                      <<< "$RAW_WEATHER" )
-                UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "$RAW_WEATHER" \
+                       TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/%2B/' )
+                    COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
+                       CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
+                UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" \
                              | xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" 2>/dev/null )
 
-                if [ "$CITY" == "null" -o "$CITY" == "" ] 
+                if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
                     TEXT="Wrong location!"
                 else
-                    TEXT="[$UPDATE_TIME]: $TEMP $COMMENT%0A$CITY"
+                    TEXT="[${UPDATE_TIME}]: ${TEMP} ${COMMENT}%0A${CITY}"
                 fi
 
-                _send_text && sed 's/%2B/+/g' <<<                               \
-                             "$( date +"[%H:%M]: \"" )${TEXT//%0A/ }\" to @$SENDER"
+                _send_text && sed 's/%2B/+/g' <<<                \
+                             "$( date +"[%H:%M]: \"" )${TEXT//%0A/ }\" to @${SENDER}"
                 ;;
 
            /info)
 
-                TEXT=$( sed 's/^\s\+//' <<< \
+                TEXT=$( sed 's/^\s\+//' <<<                      \
                      "This is my first bot on Bash.
                       You can see the code here https://github.com/Cuttlerat/bashbot
                       by @Cuttlerat" )
@@ -88,7 +88,7 @@ do
 
            /start)
 
-                TEXT=$( sed 's/^\s\+//' <<< \
+                TEXT=$( sed 's/^\s\+//' <<<                      \
                      'Enter "/weather (or /w) City" to see what temprature is there for now
 
                       Example: /w London' )
@@ -97,6 +97,6 @@ do
 
         esac
 
-        LAST_ID="$MESSAGE_ID"
+        LAST_ID="${MESSAGE_ID}"
     fi
 done
