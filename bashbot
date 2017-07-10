@@ -21,8 +21,8 @@
 #==========FUNCTIONS========================================================
 
 function _send_text {
-    curl -s --max-time "${TIMEOUT}"                                       \
-            --output /dev/null                                          \
+    curl -s --max-time "${TIMEOUT}"                                         \
+            --output /dev/null                                              \
             -d "chat_id=${CHAT_ID}&disable_web_page_preview=1&text=${TEXT}" \
             "${URL}/sendMessage"
 }
