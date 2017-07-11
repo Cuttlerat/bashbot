@@ -101,6 +101,11 @@ do
                TEXT=$(eval \(${CMD//—/--}\) )
                 _send_text
                 ;;
+           /ibash)
+
+               TEXT="$(curl -s http://ibash.org.ru/random.php | iconv -f windows-1251 -t utf-8 | grep quotbody| sed -r 's/<div[^>]+>//;s/<br ?\/>/\n/g;s/&lt;/[/g;s/&gt;/]/g;s/&quot;/"/g;s/<\/div>//' | sed 's/^\s\+//')"
+               _send_text
+               ;;
 
         esac
 
