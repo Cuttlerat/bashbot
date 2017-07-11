@@ -21,14 +21,14 @@
 #==========FUNCTIONS========================================================
 
 function _send_text {
-    curl -s --max-time "${TIMEOUT}"                                         \
-            --output /dev/null                                              \
-            -d "chat_id=${CHAT_ID}&disable_web_page_preview=1&text=${TEXT}" \
+    curl -s --max-time "${TIMEOUT}"                                           \
+            --output /dev/null                                                \
+            -d "chat_id=${CHAT_ID}&disable_web_page_preview=1&text=${TEXT}"   \
             "${URL}/sendMessage"
 }
 
 function _weather_request {
-curl -s "$( tr -d " \n" <<< \
+    curl -s "$( tr -d " \n" <<<                                               \
                  "https://api.worldweatheronline.com/premium/v1/weather.ashx?
                               q=${LOCATION:="Ленинград"}&
                               key=${WEATHER_KEY}&
@@ -46,10 +46,15 @@ function _ibash {
                _send_text
 }
 
+function _log_echo {
+
+    date +"[%H:%M]: $1" 1>&2
+}
+
 #===========================================================================
 
 
-date +"[%H:%M]: Started" 1>&2
+_log_echo "Started"
 
 while sleep 1; do
 
@@ -84,8 +89,7 @@ while sleep 1; do
                     TEXT="[${UPDATE_TIME}]: ${TEMP} ${COMMENT}%0A${CITY}"
                 fi
 
-                _send_text && sed 's/%2B/+/g' <<<                \
-                             "$( date +"[%H:%M]: \"" )${TEXT//%0A/ }\" to @${SENDER}"
+                _send_text && _log_echo "\"${TEXT//%0A/ }\" to @${SENDER}" | sed 's/%2B/+/g'         \
                 ;;
 
            /info)
@@ -117,6 +121,7 @@ while sleep 1; do
                 ICOUNT=$( sed -r 's/.*[^ 0-9].*/1/' <<< ${ICOUNT} )
                 [[ ${ICOUNT} -ge 5 ]] && ICOUNT=5
                 for ((i=0;i<${ICOUNT};i++)); do
+                    _log_echo "ibash by @${SENDER}"
                     _ibash
                 done
                 ;;
@@ -126,7 +131,6 @@ while sleep 1; do
                 if [[ ! -z $LAST_ID ]]; then
                     TEXT="Rebooting..."
                     _send_text
-                    echo "$(date +"[%H:%M]: ")$TEXT" 1>&2
                     exit
                 fi
                 ;;
