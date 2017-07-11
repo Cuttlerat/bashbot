@@ -51,6 +51,7 @@ function _ibash {
 #===========================================================================
 
 
+date +"[%H:%M] Started" 1>&2
 while sleep 1; do
 
     RAW_MESSAGE=$( curl -s "${URL}/getUpdates?offset=-1" )
