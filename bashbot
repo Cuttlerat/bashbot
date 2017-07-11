@@ -40,11 +40,9 @@ curl -s "$( tr -d " \n" <<< \
 
 function _ibash {
                TEXT="$( curl -s http://ibash.org.ru/random.php               |\
-                        iconv -f windows-1251 -t utf-8                       |\
-                        grep quotbody                                        |\
-                        sed -r 's/<div[^>]+>//;s/<br ?\/>/\n/g;s/&lt;/[/g;   
-                                     s/&gt;/]/g;s/&quot;/"/g;s/<\/div>//'    |\
-                        sed 's/^\s\+//'                                      )"
+                        w3m -dump -cols 300 -T 'text/html'                   |\
+                        awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
+                        sed '1s/ +.*//'                                      )"
                _send_text
 }
 
@@ -61,7 +59,7 @@ while sleep 1; do
         MESSAGE=$( jq  -r .result[0].message.text          <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
        LOCATION=$( sed -r 's/\/(w|weather) ?//;
                                 s/^ +//;s/ /%2B/g'         <<< "${MESSAGE}"     )
-           #CMD=$( sed -r 's/\/cmd //'                     <<< "${MESSAGE}"     )
+            #CMD=$( sed -r 's/\/cmd //'                     <<< "${MESSAGE}"     )
          ICOUNT=$( sed -r 's/\/ibash ([0-9]+)/\1/'         <<< "${MESSAGE}"     | sed -r "s/\/ibash ?/1/" )
         MESSAGE=$( awk '{print $1}'                        <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[0].message.from.username <<< "${RAW_MESSAGE}" )
@@ -110,28 +108,28 @@ while sleep 1; do
 
 #           /cmd)
 #
-#               TEXT=$(eval \(${CMD//—/--}\) )
+#                TEXT=$(eval \(${CMD//—/--}\) )
 #                _send_text
-#                ;;
+#                 ;;
 
            /ibash)
 
-               ICOUNT=$( sed -r 's/.*[^ 0-9].*/1/' <<< ${ICOUNT} )
-               [[ ${ICOUNT} -ge 5 ]] && ICOUNT=5
-               for ((i=0;i<${ICOUNT};i++)); do
-                   _ibash
-               done
-               ;;
+                ICOUNT=$( sed -r 's/.*[^ 0-9].*/1/' <<< ${ICOUNT} )
+                [[ ${ICOUNT} -ge 5 ]] && ICOUNT=5
+                for ((i=0;i<${ICOUNT};i++)); do
+                    _ibash
+                done
+                ;;
 
            /reboot)
 
-               if [[ ! -z $LAST_ID ]]; then
-                   TEXT="Rebooting..."
-                   _send_text
-                   echo "$(date +"[%H:%M]: ")$TEXT" 1>&2
-                   exit
-               fi
-               ;;
+                if [[ ! -z $LAST_ID ]]; then
+                    TEXT="Rebooting..."
+                    _send_text
+                    echo "$(date +"[%H:%M]: ")$TEXT" 1>&2
+                    exit
+                fi
+                ;;
 
         esac
 
