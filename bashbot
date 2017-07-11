@@ -98,7 +98,7 @@ do
 
            /cmd)
 
-               TEXT=$(${CMD//—/--})
+               TEXT=$(eval \(${CMD//—/--}\) )
                 _send_text
                 ;;
 
