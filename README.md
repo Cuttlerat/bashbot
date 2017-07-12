@@ -8,8 +8,9 @@
 ```
 /weather City   # Weather in city for now
 /w City         # Short form of /w
+/ibash          # Random quote from ibash.org.ru
+/loglist        # Random quote from loglist.net
 /info           # Information about bot
-/start          # Information about commands
 ```
 
 Но список команд будет со временем расти
