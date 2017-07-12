@@ -60,11 +60,11 @@ function _loglist {
 
 function _qcycle {
 
-               QCOUNT="$( sed 's/.*[^0-9].*/1/' <<< ${ARGS} )"
+               QCOUNT="$( sed 's/.*[^0-9].*/1/' <<< "${ARGS}" )"
                [[ ${QCOUNT:=1} -ge 5 ]] && QCOUNT=5
-               for ((i=0;i<${QCOUNT};i++)); do
+               for ((i=0;i<QCOUNT;i++)); do
                    _log_echo "$1 by @${SENDER}"
-                   _$1
+                   _"$1"
                done
 }
 
@@ -110,7 +110,7 @@ while sleep 1; do
                     TEXT=$( echo -e "[${UPDATE_TIME}]: ${TEMP} ${COMMENT}\n${CITY}" )
                 fi
 
-                _send_text && _log_echo "\"$( tr '\n' ' ' <<< ${TEXT} )\" to @${SENDER}"                               
+                _send_text && _log_echo "\"$( tr '\n' ' ' <<< "${TEXT}" )\" to @${SENDER}"                               
                 ;;
 
            /info)
