@@ -9,7 +9,7 @@
 #
 #---------------------------------------------------------------------------
 
-#==========VARIABLES========================================================
+#==========CONSTANTS========================================================
 
     readonly          KEY="$1"
     readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
@@ -33,7 +33,7 @@ function _send_text {
 function _weather_request {
 
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
-                  --data-urlencode "q=${LOCATION:="Ленинград"}"               \
+                  --data-urlencode "q=${ARGS:="Ленинград"}"                   \
                             --data "key=${WEATHER_KEY}"                       \
                             --data "format=json"                              \
                             --data "date=today"                               \
@@ -86,8 +86,6 @@ while sleep 1; do
         MESSAGE=$( jq  -r .result[0].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
            ARGS=$( awk '{$1="";print $0}'                     <<< "${MESSAGE}"     | xargs )
         MESSAGE=$( awk '{print $1}'                           <<< "${MESSAGE}"     )
-       LOCATION=$( sed -r 's/\/(w|weather) ?//;s/^ +//'       <<< "${MESSAGE}"     )
-         QCOUNT=$( sed -r 's/\/(ibash|loglist) ([0-9]+)/\1/'  <<< "${MESSAGE}"     | sed -r "s/.*[^ 0-9].*/1/" )
          SENDER=$( jq  -r .result[0].message.from.username    <<< "${RAW_MESSAGE}" )
 
     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
