@@ -15,35 +15,36 @@
      WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
          TIMEOUT="10"
              URL="https://api.telegram.org/bot${KEY}"
-         BOTNAME="@$( curl -s "${URL}/getMe" |     \
-                      jq .result.username  | tr -d '"' )"
+         BOTNAME="@$( curl -s "${URL}/getMe" |           \
+                      jq .result.username    | tr -d '"' )"
 
 #==========FUNCTIONS========================================================
 
 function _send_text {
     curl -s --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
-            -d "chat_id=${CHAT_ID}&disable_web_page_preview=1&text=${TEXT}"   \
+            -d "chat_id=${CHAT_ID}"                                           \
+            -d "disable_web_page_preview=1"                                   \
+            --data-urlencode "text=${TEXT}"                                   \
             "${URL}/sendMessage"
 }
 
 function _weather_request {
-    curl -s "$( tr -d " \n" <<<                                               \
-                 "https://api.worldweatheronline.com/premium/v1/weather.ashx?
-                              q=${LOCATION:="Ленинград"}&
-                              key=${WEATHER_KEY}&
-                              format=json&
-                              date=today&
-                              fx24=yes&
-                              lang=ru" )"
+    curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
+                  --data-urlencode "q=${LOCATION:="Ленинград"}"               \
+                            --data "key=${WEATHER_KEY}"                       \
+                            --data "format=json"                              \
+                            --data "date=today"                               \
+                            --data "fx24=yes"                                 \
+                            --data "lang=ru"                                
 }
 
 function _ibash {
                TEXT="$( curl -s http://ibash.org.ru/random.php               |\
                         w3m -dump -cols 300 -T 'text/html'                   |\
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
-                        sed '1s/ +.*//;s/+/%2B/g'                            )"
-               _send_text
+                        sed '1s/ +.*//'                                      )"
+               _send_text 1>&2
 }
 
 function _log_echo {
@@ -62,10 +63,8 @@ while sleep 1; do
      MESSAGE_ID=$( jq .result[0].message.message_id        <<< "${RAW_MESSAGE}" )
         CHAT_ID=$( jq .result[0].message.chat.id           <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[0].message.text          <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
-       LOCATION=$( sed -r 's/\/(w|weather) ?//;
-                                s/^ +//;s/ /%2B/g'         <<< "${MESSAGE}"     )
-            #CMD=$( sed -r 's/\/cmd //'                     <<< "${MESSAGE}"     )
-         ICOUNT=$( sed -r 's/\/ibash ([0-9]+)/\1/'         <<< "${MESSAGE}"     | sed -r "s/\/ibash ?/1/" )
+       LOCATION=$( sed -r 's/\/(w|weather) ?//;s/^ +//'    <<< "${MESSAGE}"     )
+         ICOUNT=$( sed -r 's/\/ibash ([0-9]+)/\1/'         <<< "${MESSAGE}"     | sed -r "s/.*[^ 0-9].*/1/" )
         MESSAGE=$( awk '{print $1}'                        <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[0].message.from.username <<< "${RAW_MESSAGE}" )
 
@@ -75,9 +74,8 @@ while sleep 1; do
 
             /w|/weather)
 
-                [[ $SENDER == "CrownBerry" ]] && LOCATION="Сыктывкар"
                 RAW_WEATHER=$( _weather_request )
-                       TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/%2B/' )
+                       TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" \
@@ -87,10 +85,10 @@ while sleep 1; do
                 then
                     TEXT="Wrong location!"
                 else
-                    TEXT="[${UPDATE_TIME}]: ${TEMP} ${COMMENT}%0A${CITY}"
+                    TEXT=$( echo -e "[${UPDATE_TIME}]: ${TEMP} ${COMMENT}\n${CITY}" )
                 fi
 
-                _send_text && _log_echo "\"$( sed 's/%2B/+/g;s/%0A/ /g' <<< ${TEXT} )\" to @${SENDER}"                               
+                _send_text && _log_echo "\"$( tr '\n' ' ' <<< ${TEXT} )\" to @${SENDER}"                               
                 ;;
 
            /info)
@@ -111,15 +109,8 @@ while sleep 1; do
                 _send_text
                 ;;
 
-#           /cmd)
-#
-#                TEXT=$(eval \(${CMD//—/--}\) )
-#                _send_text
-#                 ;;
-
            /ibash)
 
-                ICOUNT=$( sed -r 's/.*[^ 0-9].*/1/' <<< ${ICOUNT} )
                 [[ ${ICOUNT} -ge 5 ]] && ICOUNT=5
                 for ((i=0;i<${ICOUNT};i++)); do
                     _log_echo "ibash by @${SENDER}"
