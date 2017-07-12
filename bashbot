@@ -127,6 +127,12 @@ while sleep 1; do
                 fi
                 ;;
 
+           /loglist)
+                RAW_LOGLIST=$( curl -sL https://loglist.net/api/quote/random )
+                TEXT="$( echo -e "#$(jq -r .id <<< ${RAW_LOGLIST})\n$( jq -r .content <<< ${RAW_LOGLIST} )" )"
+                _send_text
+                ;;
+
         esac
 
         LAST_ID="${MESSAGE_ID}"
