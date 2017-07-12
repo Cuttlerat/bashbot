@@ -42,7 +42,7 @@ function _ibash {
                TEXT="$( curl -s http://ibash.org.ru/random.php               |\
                         w3m -dump -cols 300 -T 'text/html'                   |\
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
-                        sed '1s/ +.*//'                                      )"
+                        sed '1s/ +.*//;s/+/%2B/g'                            )"
                _send_text
 }
 
@@ -75,6 +75,7 @@ while sleep 1; do
 
             /w|/weather)
 
+                [[ $SENDER == "CrownBerry" ]] && LOCATION="Сыктывкар"
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/%2B/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
