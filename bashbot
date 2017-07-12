@@ -11,12 +11,12 @@
 
 #==========VARIABLES========================================================
 
-             KEY="$1"
-     WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
-         TIMEOUT="10"
-             URL="https://api.telegram.org/bot${KEY}"
-         BOTNAME="@$( curl -s "${URL}/getMe" |           \
-                      jq .result.username    | tr -d '"' )"
+    readonly          KEY="$1"
+    readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
+    readonly      TIMEOUT="10"
+    readonly          URL="https://api.telegram.org/bot${KEY}"
+    readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
+                              jq .result.username    | tr -d '"' )"
 
 #==========FUNCTIONS========================================================
 
@@ -70,7 +70,7 @@ function _qcycle {
 
 function _log_echo {
 
-    date +"[%H:%M]: $1" 1>&2
+               date +"[%H:%M]: $1" 1>&2
 }
 
 #===========================================================================
@@ -85,9 +85,9 @@ while sleep 1; do
         CHAT_ID=$( jq .result[0].message.chat.id              <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[0].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
            ARGS=$( awk '{$1="";print $0}'                     <<< "${MESSAGE}"     | xargs )
+        MESSAGE=$( awk '{print $1}'                           <<< "${MESSAGE}"     )
        LOCATION=$( sed -r 's/\/(w|weather) ?//;s/^ +//'       <<< "${MESSAGE}"     )
          QCOUNT=$( sed -r 's/\/(ibash|loglist) ([0-9]+)/\1/'  <<< "${MESSAGE}"     | sed -r "s/.*[^ 0-9].*/1/" )
-        MESSAGE=$( awk '{print $1}'                           <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[0].message.from.username    <<< "${RAW_MESSAGE}" )
 
     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
@@ -115,7 +115,7 @@ while sleep 1; do
 
            /info)
 
-                TEXT=$( sed 's/^\s\+//' <<<                      \
+                TEXT=$( sed 's/^\s\+//' <<<\
                      "This is my first bot on Bash.
                       You can see the code here https://github.com/Cuttlerat/bashbot
                       by @Cuttlerat" )
@@ -124,7 +124,7 @@ while sleep 1; do
 
            /start)
 
-                TEXT=$( sed 's/^\s\+//' <<<                      \
+                TEXT=$( sed 's/^\s\+//' <<<\
                      'Enter "/weather (or /w) City" to see what temprature is there for now
 
                       Example: /w London' )
@@ -141,7 +141,7 @@ while sleep 1; do
                 _qcycle "loglist"
                 ;;
 
-           /reboot)
+           /restart|/reboot)
 
                 if [[ ! -z $LAST_ID ]]; then
                     TEXT="Rebooting..."
