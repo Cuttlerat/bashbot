@@ -128,8 +128,9 @@ while sleep 1; do
                 ;;
 
            /loglist)
-                RAW_LOGLIST=$( curl -sL https://loglist.net/api/quote/random )
-                TEXT="$( echo -e "#$(jq -r .id <<< ${RAW_LOGLIST})\n$( jq -r .content <<< ${RAW_LOGLIST} )" )"
+                TEXT="$( curl -sL https://loglist.net/api/quote/random |\
+                         jq -r .id,.content                            |\
+                         sed '1s/^/#/' )"                              
                 _send_text
                 ;;
 
