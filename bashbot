@@ -21,6 +21,7 @@
 #==========FUNCTIONS========================================================
 
 function _send_text {
+
     curl -s --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
             -d "chat_id=${CHAT_ID}"                                           \
@@ -30,6 +31,7 @@ function _send_text {
 }
 
 function _weather_request {
+
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
                   --data-urlencode "q=${LOCATION:="Ленинград"}"               \
                             --data "key=${WEATHER_KEY}"                       \
@@ -40,10 +42,19 @@ function _weather_request {
 }
 
 function _ibash {
+
                TEXT="$( curl -s http://ibash.org.ru/random.php               |\
                         w3m -dump -cols 300 -T 'text/html'                   |\
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
                         sed '1s/ +.*//'                                      )"
+               _send_text 1>&2
+}
+
+function _loglist {
+
+               TEXT="$( curl -sL https://loglist.net/api/quote/random        |\
+                        jq -r .id,.content                                   |\
+                        sed '1s/^/#/' )"                              
                _send_text 1>&2
 }
 
@@ -79,8 +90,8 @@ while sleep 1; do
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
-                UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" \
-                             | xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" 2>/dev/null )
+                UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
+                               xargs -i date -d "TZ=\"UTC\" {}" +"%H:%M" 2>/dev/null )
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
@@ -119,6 +130,15 @@ while sleep 1; do
                 done
                 ;;
 
+           /loglist)
+
+                [[ ${LOGCOUNT} -ge 5 ]] && LOGCOUNT=5
+                for ((i=0;i<${ICOUNT};i++)); do
+                    _log_echo "loglist by @${SENDER}"
+                    _loglist
+                done
+                ;;
+
            /reboot)
 
                 if [[ ! -z $LAST_ID ]]; then
@@ -126,18 +146,6 @@ while sleep 1; do
                     _send_text
                     exit
                 fi
-                ;;
-
-           /loglist)
-
-                [[ ${LOGCOUNT} -ge 5 ]] && LOGCOUNT=5
-                for ((i=0;i<${ICOUNT};i++)); do
-                    _log_echo "loglist by @${SENDER}"
-                    TEXT="$( curl -sL https://loglist.net/api/quote/random |\
-                             jq -r .id,.content                            |\
-                             sed '1s/^/#/' )"                              
-                    _send_text
-                done
                 ;;
 
         esac
