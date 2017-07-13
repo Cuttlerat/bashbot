@@ -152,15 +152,18 @@ while sleep 1; do
 
            /wset)
                 
-                [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Ee]mpty ]] && sed -i "/${SENDER}/d"
-                if [[ ! $( grep -cq "${SENDER}" "${LOCATIONS}" ) ]]; then
+                if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Ee]mpty ]]; then
+                    sed -i "/${SENDER}/d" "${LOCATIONS}"
+                    TEXT="Deleted information about @${SENDER}"
+                elif [[ ! $( grep -cq "${SENDER}" "${LOCATIONS}" ) ]]; then
                     sed -i "s/${SENDER};.*/$SENDER;${ARGS}/" "${LOCATIONS}"
+                    TEXT="New city for @${SENDER}: ${ARGS}"
                 else 
                     echo "${SENDER};${ARGS}" >> "${LOCATIONS}"
-                    TEXT="Added ${SENDER}: ${ARGS}"
-                    _send_text
-                    _log_echo "$TEXT"
+                    TEXT="Added @${SENDER}: ${ARGS}"
                 fi
+                _send_text
+                _log_echo "$TEXT"
                 ;;
 
         esac
