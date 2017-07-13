@@ -25,7 +25,7 @@ function _send_text {
     curl -s --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
             -d "chat_id=${CHAT_ID}"                                           \
-            -d "disable_web_page_preview=1"                                   \
+            -d "disable_web_page_preview=${GPREVIEW}"                         \
             --data-urlencode "text=${TEXT}"                                   \
             "${URL}/sendMessage"
 }
@@ -147,6 +147,14 @@ while sleep 1; do
                     exit
                 fi
                 ;;
+
+           /google)
+
+               GPREVIEW=0
+               TEXT="https://www.google.ru/search?q${ARGS}"
+               _send_text
+               GPREVIEW=1
+               ;;
 
         esac
 
