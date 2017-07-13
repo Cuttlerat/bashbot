@@ -153,8 +153,12 @@ while sleep 1; do
            /wset)
                 
                 if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Ee]mpty ]]; then
-                    sed -i "/${SENDER}/d" "${LOCATIONS}"
-                    TEXT="Deleted information about @${SENDER}"
+                    if [[ ! $( grep -cq ${SENDER} "${LOCATIONS}" ) ]]; then 
+                        sed -i "/${SENDER}/d" "${LOCATIONS}"
+                        TEXT="Deleted information about @${SENDER}"
+                    else
+                        TEXT="No information about @${SENDER}"
+                    fi
                 elif [[ ! $( grep -cq "${SENDER}" "${LOCATIONS}" ) ]]; then
                     sed -i "s/${SENDER};.*/$SENDER;${ARGS}/" "${LOCATIONS}"
                     TEXT="New city for @${SENDER}: ${ARGS}"
