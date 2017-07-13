@@ -151,7 +151,7 @@ while sleep 1; do
            /google)
 
                GPREVIEW=0
-               TEXT="https://www.google.ru/search?q${ARGS}"
+               TEXT="https://www.google.ru/search?q=${ARGS}"
                _send_text
                GPREVIEW=1
                ;;
