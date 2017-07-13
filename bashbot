@@ -100,6 +100,7 @@ while sleep 1; do
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
                                xargs -i date -d 'TZ="UTC" {}' +"%H:%M" 2>/dev/null )
+                [[ -z ${ARGS} ]] && [[ ! $( grep -cq "${SENDER}" "/data/.locations" ) ]] && CITY=$( sed -n "s/${SENDER};//p" "/data/.locations" )
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
@@ -146,6 +147,11 @@ while sleep 1; do
                     _send_text
                     exit
                 fi
+                ;;
+
+           /wset)
+                
+               [[ ! $( grep -cq "${SENDER}" "/data/.locations" ) ]] && sed -i "s/${SENDER};.*/$SENDER;${ARGS}/" "/data/.locations" || echo "${SENDER};${ARGS}" >> "/data/.locations" && TEXT="Added ${SENDER}: ${ARGS}" && _send_text && _log_echo "$TEXT"
                 ;;
 
         esac
