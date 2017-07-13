@@ -160,7 +160,7 @@ while sleep 1; do
                    GPREVIEW=1
                fi
                ;;
-
+ 
         esac
 
         LAST_ID="${MESSAGE_ID}"
