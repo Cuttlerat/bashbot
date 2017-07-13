@@ -16,7 +16,7 @@
     readonly      TIMEOUT="10"
     readonly          URL="https://api.telegram.org/bot${KEY}"
     readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
-                              jq .result.username    | tr -d '"' )"
+                               jq .result.username    | tr -d '"' )"
 
 #==========FUNCTIONS========================================================
 
