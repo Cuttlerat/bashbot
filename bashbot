@@ -84,6 +84,7 @@ while sleep 1; do
      MESSAGE_ID=$( jq .result[0].message.message_id           <<< "${RAW_MESSAGE}" )
         CHAT_ID=$( jq .result[0].message.chat.id              <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[0].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
+        MESSAGE=$( sed -r 's/ч(е|ё|то) (такое|за)/\/google/'  <<< "${MESSAGE}"     )
            ARGS=$( awk '{$1="";print $0}'                     <<< "${MESSAGE}"     | xargs )
         MESSAGE=$( awk '{print $1}'                           <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[0].message.from.username    <<< "${RAW_MESSAGE}" )
@@ -151,7 +152,7 @@ while sleep 1; do
            /google)
 
                GPREVIEW=0
-               TEXT="https://www.google.ru/search?q=${ARGS}"
+               TEXT="https://www.google.ru/search?q=${ARGS// /+}"
                _send_text
                GPREVIEW=1
                ;;
