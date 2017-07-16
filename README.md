@@ -8,6 +8,7 @@
 ```
 /weather City   # Weather in city for now
 /w City         # Short form of /w
+/wset           # Set default city (information is stored in data/.locations)
 /ibash          # Random quote from ibash.org.ru
 /loglist        # Random quote from loglist.net
 /info           # Information about bot
@@ -27,13 +28,13 @@
 
 ```
 docker build -t bashbot .
-docker run bashbot <BOT_TOKEN> <WEATHER_TOKEN>
+docker run bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
 Также вы можете взять готовый контейнер с Dockerhub
 
 ```
-docker run cuttlerat/bashbot <BOT_TOKEN> <WEATHER_TOKEN>
+docker run cuttlerat/bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
 Токен для погоды брать здесь: https://www.worldweatheronline.com/ <br>
