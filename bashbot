@@ -23,12 +23,12 @@
 
 function _send_text {
 
-    curl -s --max-time "${TIMEOUT}"                                           \
+    curl -s "${URL}/sendMessage"                                              \
+            --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
-            -d "chat_id=${CHAT_ID}"                                           \
-            -d "disable_web_page_preview=1"                                   \
             --data-urlencode "text=${TEXT}"                                   \
-            "${URL}/sendMessage"
+                      --data "chat_id=${CHAT_ID}"                             \
+                      --data "disable_web_page_preview=1"                     
 }
 
 function _weather_request {
@@ -64,9 +64,9 @@ function _qcycle {
                QCOUNT="$( sed 's/.*[^0-9].*/1/' <<< "${ARGS}" )"
                [[ ${QCOUNT:=1} -ge 5 ]] && QCOUNT=5
                for ((i=0;i<QCOUNT;i++)); do
-                   _log_echo "$1 by @${SENDER}"
                    _"$1"
                done
+               _log_echo "$1 ${QCOUNT} by @${SENDER}"
 }
 
 function _log_echo {
@@ -81,13 +81,18 @@ _log_echo "Started"
 
 while sleep 1; do
 
-    RAW_MESSAGE=$( curl -s "${URL}/getUpdates?offset=-1" )
-     MESSAGE_ID=$( jq .result[0].message.message_id           <<< "${RAW_MESSAGE}" )
-        CHAT_ID=$( jq .result[0].message.chat.id              <<< "${RAW_MESSAGE}" )
-        MESSAGE=$( jq  -r .result[0].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
-           ARGS=$( awk '{$1="";print $0}'                     <<< "${MESSAGE}"     | xargs )
-        MESSAGE=$( awk '{print $1}'                           <<< "${MESSAGE}"     )
-         SENDER=$( jq  -r .result[0].message.from.username    <<< "${RAW_MESSAGE}" )
+    RAW_MESSAGE=$( curl -s "${URL}/getUpdates" )
+      MSG_COUNT=$( jq '.result | length' <<< "${RAW_MESSAGE}" )
+
+    for i in $( seq 0 "${MSG_COUNT}" ); do
+
+     MESSAGE_ID=$( jq .result[$i].message.message_id           <<< "${RAW_MESSAGE}" )
+      UPDATE_ID=$( jq .result[$i].update_id                    <<< "${RAW_MESSAGE}" )
+        CHAT_ID=$( jq .result[$i].message.chat.id              <<< "${RAW_MESSAGE}" )
+        MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
+           ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs )
+        MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
+         SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
 
     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
 
@@ -110,7 +115,8 @@ while sleep 1; do
                     TEXT=$( echo -e "[${UPDATE_TIME}]: ${TEMP} ${COMMENT}\n${CITY}" )
                 fi
 
-                _send_text && _log_echo "\"$( tr '\n' ' ' <<< "${TEXT}" )\" to @${SENDER}"                               
+                _send_text
+                _log_echo "Weather \"${CITY}\" to @${SENDER}"                               
                 ;;
 
            /info)
@@ -173,5 +179,7 @@ while sleep 1; do
         esac
 
         LAST_ID="${MESSAGE_ID}"
+        curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
     fi
+   done
 done
