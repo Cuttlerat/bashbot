@@ -206,30 +206,35 @@ while sleep 1; do
 
            /ping)
 
-               case "${ARGS,,}" in
-                   сан[её]к|саша)
-                       PING="CrownBerry"
-                       ;;
-                   саня)
-                       PING="CrownBerry"
-                       ;;
-                   арт[ёе]м)
-                       PING="hotkosc"
-                       ;;
-                   aл[ёе]ша|л[её][хш]а)
-                       PING="Cuttlerat"
-                       ;;
-                   п[её]с)
-                       PING="Cuttlerat"
-                       ;;
-                   костян|костя)
-                       PING="GTRTFM"
-                       ;;
-               esac 
-
-               TEXT="@${PING} ping"
-               _send_text
-               _log_echo "Ping to \"${PING}\" by @${SENDER}"
+               PING=()
+               for i in ${ARGS,,}; do
+                   case "${i}" in
+                       сан[её]к|саша)
+                           PING+=("CrownBerry")
+                           ;;
+                       саня)
+                           PING+=("CrownBerry")
+                           ;;
+                       арт[ёе]м)
+                           PING+=("hotkosc")
+                           ;;
+                       aл[ёе]ша|л[её][хш]а)
+                           PING+=("Cuttlerat")
+                           ;;
+                       п[её]с)
+                           PING+=("Cuttlerat")
+                           ;;
+                       костян|костя)
+                           PING+=("GTRTFM")
+                           ;;
+                   esac 
+               done
+                
+               for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
+                   TEXT="@${USERNAME} ping"
+                   _send_text
+                   _log_echo "Ping to \"${USERNAME}\" by @${SENDER}"
+               done
                ;;
 
         esac
