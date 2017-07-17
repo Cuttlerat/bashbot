@@ -94,6 +94,7 @@ while sleep 1; do
         MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
 
+
     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
 
         case "${MESSAGE}" in
@@ -152,6 +153,7 @@ while sleep 1; do
                 if [[ ! -z $LAST_ID ]]; then
                     TEXT="Rebooting..."
                     _send_text
+                    _log_echo "Reboot by @{$SENDER}"
                     exit
                 fi
                 ;;
@@ -175,11 +177,13 @@ while sleep 1; do
                 _send_text
                 _log_echo "$TEXT"
                 ;;
+
             /md5)
 
-                TEXT=$( md5sum <<<${ARGS} | awk '{print $1}' )
+                TEXT=$( md5sum <<< "${ARGS}" | awk '{print $1}' )
                 _send_text
-                _log_echo "md5 to @${SENDER}"
+                _log_echo "MD5 to @${SENDER}"
+                ;;
 
         esac
 
