@@ -202,18 +202,6 @@ while sleep 1; do
                _send_text
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
-
-           /*@*)
-               TEXT="НЕ ЮЗАЙ ЕГО! ЮЗАЙ МЕНЯ!"
-               _send_text
-               _log_echo "Another bot command: \"${MESSAGE}${ARGS:+" ${ARGS}"}\" by @${SENDER}"
-               ;;
-
-           /*)
-               TEXT="НЕТ У МЕНЯ ТАКИХ КОМАНД БЛЯТЬ!"
-               _send_text
-               _log_echo "Unknown command: \"${MESSAGE}${ARGS:+" ${ARGS}"}\" by @${SENDER}"
-               ;;
  
         esac
 
