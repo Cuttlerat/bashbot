@@ -208,7 +208,7 @@ while sleep 1; do
 
                PING=()
                for i in ${ARGS,,}; do
-                   case "${i}" in
+                   case "${i//[,. ]/}" in
                        сан[её]к|саша)
                            PING+=("CrownBerry")
                            ;;
