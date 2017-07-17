@@ -196,6 +196,13 @@ while sleep 1; do
                GPREVIEW=1
                ;;
 
+           /roll)
+
+               TEXT=$(( ${RANDOM} % 100 ))
+               _send_text
+               _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
+               ;;
+
            /*@*)
                TEXT="НЕ ЮЗАЙ ЕГО! ЮЗАЙ МЕНЯ!"
                _send_text
