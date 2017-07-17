@@ -152,13 +152,11 @@ while sleep 1; do
            /google)
 
                ARGS=${ARGS//\?/}
-               if [[ ! ${ARGS} =~ (херня|хуйня|пиздец|нахуй) ]]; then
-                   GPREVIEW=0
-                   TEXT="https://www.google.ru/search?q=${ARGS// /+}"
-                   _send_text
-                   _log_echo "google: \"${ARGS}\" by @${SENDER}"
-                   GPREVIEW=1
-               fi
+               GPREVIEW=0
+               TEXT="https://www.google.ru/search?q=${ARGS// /+}"
+               _send_text
+               _log_echo "google: \"${ARGS}\" by @${SENDER}"
+               GPREVIEW=1
                ;;
  
         esac
