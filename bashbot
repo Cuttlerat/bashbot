@@ -91,7 +91,7 @@ while sleep 1; do
         CHAT_ID=$( jq .result[$i].message.chat.id              <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
         MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/'  <<< "${MESSAGE}"     )
-           ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs )
+           ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs 2>/dev/null )
         MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
 
@@ -194,6 +194,13 @@ while sleep 1; do
                _send_text
                _log_echo "Google: \"${ARGS}\" by @${SENDER}"
                GPREVIEW=1
+               ;;
+
+           /roll)
+
+               TEXT=$(( ${RANDOM} % 100 ))
+               _send_text
+               _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
  
         esac
