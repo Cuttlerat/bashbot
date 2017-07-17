@@ -11,6 +11,9 @@
 /wset           # Set default city (information is stored in data/.locations)
 /ibash          # Random quote from ibash.org.ru
 /loglist        # Random quote from loglist.net
+/google String  # Sending a link to google.com/String 
+/reboot         # Rebooting a docker container
+/md5 String     # Creacting a md5 sum of String
 /info           # Information about bot
 ```
 
