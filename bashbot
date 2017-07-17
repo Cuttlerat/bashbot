@@ -198,7 +198,7 @@ while sleep 1; do
 
            /roll)
 
-               TEXT=$(( ${RANDOM} % 100 ))
+               TEXT=$(( "${RANDOM}" % 100 ))
                _send_text
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
