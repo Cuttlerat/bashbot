@@ -199,7 +199,7 @@ while sleep 1; do
            /*@*)
                TEXT="НЕ ЮЗАЙ ЕГО! ЮЗАЙ МЕНЯ!"
                _send_text
-               _log_echo "Another bot command: \"${MESSAGE} ${ARGS}\" by @${SENDER}"
+               _log_echo "Another bot command: \"${MESSAGE}${ARGS:+" ${ARGS}"}\" by @${SENDER}"
                ;;
 
            /*)
