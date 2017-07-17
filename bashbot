@@ -230,11 +230,14 @@ while sleep 1; do
                    esac 
                done
                 
+               USERNAMES=()
                for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
-                   TEXT="@${USERNAME} ping"
-                   _send_text
-                   _log_echo "Ping to \"${USERNAME}\" by @${SENDER}"
+
+                   USERNAMES+=("@${USERNAME}")
                done
+               TEXT="${USERNAMES[@]}"
+               _send_text
+               _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
                ;;
 
         esac
