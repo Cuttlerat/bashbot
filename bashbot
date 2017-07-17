@@ -90,8 +90,9 @@ while sleep 1; do
       UPDATE_ID=$( jq .result[$i].update_id                    <<< "${RAW_MESSAGE}" )
         CHAT_ID=$( jq .result[$i].message.chat.id              <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
-        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/'  <<< "${MESSAGE}"     )
-        MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/(сан[её]к|саня|саша|костян?|п[её]с|арт[её]м|а?л[её][хш]а)/\/ping &/'  <<< "${MESSAGE,,}" )
+        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i' <<< "${MESSAGE}"     )
+        [[ ! "${MESSAGE}" =~ ^\/[a-zA-Z0-9]+ ]] &&                                  \
+        MESSAGE=$( sed -r 's/.*(сан[её]к|саня|саша|костян?|п[её]с|арт[её]м|а?л[её][хш]а).*/\/ping &/'  <<< "${MESSAGE,,}" )
            ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs 2>/dev/null )
         MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
@@ -206,6 +207,7 @@ while sleep 1; do
 
            /ping)
 
+               ARGS=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g' <<< "${ARGS}" )
                PING=()
                for i in ${ARGS,,}; do
                    case "${i//[,. ]/}" in
@@ -230,14 +232,16 @@ while sleep 1; do
                    esac 
                done
                 
-               USERNAMES=()
-               for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
+               if [[ ! -z ${PING[@]} ]]; then
+                   USERNAMES=()
+                   for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
 
-                   USERNAMES+=("@${USERNAME}")
-               done
-               TEXT="${USERNAMES[@]}"
-               _send_text
-               _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
+                       USERNAMES+=("@${USERNAME}")
+                   done
+                   TEXT="${USERNAMES[@]}"
+                   _send_text
+                   _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
+               fi
                ;;
 
         esac
