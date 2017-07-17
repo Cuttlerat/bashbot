@@ -91,7 +91,7 @@ while sleep 1; do
         CHAT_ID=$( jq .result[$i].message.chat.id              <<< "${RAW_MESSAGE}" )
         MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
         MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/'  <<< "${MESSAGE}"     )
-        MESSAGE=$( sed -r 's/(сан[её]к|саня|саша|костян?|п[её]с|арт[её]м|а?л[её][хш]а)/\/ping &/'  <<< "${MESSAGE,,}"   )
+        MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/(сан[её]к|саня|саша|костян?|п[её]с|арт[её]м|а?л[её][хш]а)/\/ping &/'  <<< "${MESSAGE,,}" )
            ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs 2>/dev/null )
         MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
