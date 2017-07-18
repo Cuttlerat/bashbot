@@ -84,7 +84,7 @@ while sleep 1; do
     RAW_MESSAGE=$( curl -s "${URL}/getUpdates" )
       MSG_COUNT=$( jq '.result | length' <<< "${RAW_MESSAGE}" )
 
-    for i in $( seq 0 "${MSG_COUNT}" ); do
+    for i in $( seq 0 "${MSG_COUNT:=0}" ); do
 
      MESSAGE_ID=$( jq .result[$i].message.message_id           <<< "${RAW_MESSAGE}" )
       UPDATE_ID=$( jq .result[$i].update_id                    <<< "${RAW_MESSAGE}" )
