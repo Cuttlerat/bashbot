@@ -14,6 +14,7 @@
     readonly          KEY="$1"
     readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
     readonly    LOCATIONS="/data/.locations"
+    readonly    J_PINGERS="/data/.pingers.json"
     readonly      TIMEOUT="10"
     readonly          URL="https://api.telegram.org/bot${KEY}"
     readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
@@ -74,31 +75,58 @@ function _log_echo {
                date +"[%H:%M]: $1" 1>&2
 }
 
+function _load_pingers {
+
+               J_COUNT=$( jq -r '.users | length' "${J_PINGERS}") 
+               J_ARR=()
+
+               for I_USER in $( seq 0 $(( ${J_COUNT:=0} - 1 )) 2>/dev/null ); do
+                        J_USERNAME=$( jq -r  .users["${I_USER}"].username             "${J_PINGERS}" )
+                    J_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${J_PINGERS}" ) 
+                   for I_REGEXP in $( seq 0 $(( ${J_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
+                          J_REGEXP=$( jq -r .users["${I_USER}"].regexp["${I_REGEXP}"] "${J_PINGERS}" )
+                             J_ARR+=( "${J_REGEXP};${J_USERNAME}"                                    )
+                   done
+               done
+
+}
+
 #===========================================================================
 
-
 _log_echo "Started"
+_load_pingers
 
 while sleep 1; do
 
     RAW_MESSAGE=$( curl -s "${URL}/getUpdates" )
       MSG_COUNT=$( jq '.result | length' <<< "${RAW_MESSAGE}" )
 
-    for i in $( seq 0 "${MSG_COUNT}" ); do
+    for i in $( seq 0 "${MSG_COUNT:=0}" ); do
 
-     MESSAGE_ID=$( jq .result[$i].message.message_id           <<< "${RAW_MESSAGE}" )
-      UPDATE_ID=$( jq .result[$i].update_id                    <<< "${RAW_MESSAGE}" )
-        CHAT_ID=$( jq .result[$i].message.chat.id              <<< "${RAW_MESSAGE}" )
-        MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
-        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/'  <<< "${MESSAGE}"     )
-           ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs 2>/dev/null )
-        MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
-         SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
+     MESSAGE_ID=$( jq .result[$i].message.message_id              <<< "${RAW_MESSAGE}"  )
 
+     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
 
-    if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
+      UPDATE_ID=$( jq .result[$i].update_id                       <<< "${RAW_MESSAGE}"  )
+        CHAT_ID=$( jq .result[$i].message.chat.id                 <<< "${RAW_MESSAGE}"  )
+        MESSAGE=$( jq  -r .result[$i].message.text                <<< "${RAW_MESSAGE}"  | sed -r "s/${BOTNAME}//" )
+        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'    <<< "${MESSAGE}"      )
 
-        case "${MESSAGE}" in
+        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
+           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'      <<< "${MESSAGE,,}"    )
+            for k in "${J_ARR[@]}"; do
+               if [[ "${PING_MESSAGE,,}" =~ ${k%%;*} ]]; then
+                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"  <<< "${PING_MESSAGE}" )
+                break
+            fi
+            done
+        fi
+
+           ARGS=$( awk '{$1="";print $0}'                         <<< "${MESSAGE}"      | xargs 2>/dev/null )
+        COMMAND=$( awk '{print $1}'                               <<< "${MESSAGE}"      )
+         SENDER=$( jq  -r .result[$i].message.from.username       <<< "${RAW_MESSAGE}"  )
+
+        case "${COMMAND}" in
 
             /w|/weather)
 
@@ -154,7 +182,7 @@ while sleep 1; do
                 if [[ ! -z $LAST_ID ]]; then
                     TEXT="Rebooting..."
                     _send_text
-                    _log_echo "Reboot by @{$SENDER}"
+                    _log_echo "Reboot by @${SENDER}"
                     exit
                 fi
                 ;;
@@ -197,12 +225,34 @@ while sleep 1; do
                ;;
 
            /roll)
-
-               TEXT=$(( "${RANDOM}" % 100 ))
+           
+               TEXT=$(( RANDOM % 100 ))
                _send_text
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
- 
+
+           /ping)
+
+               PING=()
+               for I_ARGS in ${ARGS,,}; do
+                   for I_REGEXP in "${J_ARR[@]}"; do
+                       if [[ ${I_ARGS} =~ ${I_REGEXP%%;*} ]]; then
+                           PING+=(${I_REGEXP##*;})
+                       fi
+                   done
+               done
+
+               if [[ ! -z ${PING[*]} ]]; then
+                   USERNAMES=()
+                   for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
+
+                       USERNAMES+=("@${USERNAME}")
+                   done
+                   TEXT="${USERNAMES[*]}"
+                   _send_text
+                   _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
+               fi
+               ;;
         esac
 
         LAST_ID="${MESSAGE_ID}"
