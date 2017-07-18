@@ -14,6 +14,7 @@
     readonly          KEY="$1"
     readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
     readonly    LOCATIONS="/data/.locations"
+    readonly    J_PINGERS="/data/.pingers.json"
     readonly      TIMEOUT="10"
     readonly          URL="https://api.telegram.org/bot${KEY}"
     readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
@@ -73,11 +74,24 @@ function _log_echo {
 
                date +"[%H:%M]: $1" 1>&2
 }
+function _load_pingers {
+               J_COUNT=$( jq -r '.users | length' "${J_PINGERS}") 
+               J_ARR=()
+               for i in $( seq 0 $(( ${J_COUNT:=0} - 1 )) ); do
+                       J_USERNAME=$( jq -r .users[${i}].username "${J_PINGERS}" )
+                   J_REGEXP_COUNT=$( jq -r ".users[${i}].regexp | length" "${J_PINGERS}" ) 
+                   for j in $( seq 0 $(( ${J_REGEXP_COUNT:=0} - 1 )) ); do
+                     J_REGEXP=$( jq -r .users[${i}].regexp[$j] "${J_PINGERS}" )
+                       J_ARR+=( "${J_REGEXP};${J_USERNAME}" )
+                   done
+               done
+}
 
 #===========================================================================
 
 
 _log_echo "Started"
+_load_pingers
 
 while sleep 1; do
 
@@ -92,7 +106,10 @@ while sleep 1; do
         MESSAGE=$( jq  -r .result[$i].message.text             <<< "${RAW_MESSAGE}" | sed -r "s/${BOTNAME}//" )
         MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i' <<< "${MESSAGE}"     )
         [[ ! "${MESSAGE}" =~ ^\/[a-zA-Z0-9]+ ]] &&                                  \
-        MESSAGE=$( sed -r 's/.*(сан[её]к|саня|саша|костян?|п[её]с|арт[её]м|а?л[её][хш]а).*/\/ping &/'  <<< "${MESSAGE,,}" )
+        for k in ${J_ARR[@]}; do
+            MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"  <<< "${MESSAGE,,}" )
+            break
+        done
            ARGS=$( awk '{$1="";print $0}'                      <<< "${MESSAGE}"     | xargs 2>/dev/null )
         MESSAGE=$( awk '{print $1}'                            <<< "${MESSAGE}"     )
          SENDER=$( jq  -r .result[$i].message.from.username    <<< "${RAW_MESSAGE}" )
@@ -207,31 +224,18 @@ while sleep 1; do
 
            /ping)
 
+
                ARGS=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g' <<< "${ARGS}" )
                PING=()
+
                for i in ${ARGS,,}; do
-                   case "${i//[,. ]/}" in
-                       сан[её]к|саша)
-                           PING+=("CrownBerry")
-                           ;;
-                       саня)
-                           PING+=("CrownBerry")
-                           ;;
-                       арт[ёе]м)
-                           PING+=("hotkosc")
-                           ;;
-                       aл[ёе]ша|л[её][хш]а)
-                           PING+=("Cuttlerat")
-                           ;;
-                       п[её]с)
-                           PING+=("Cuttlerat")
-                           ;;
-                       костян|костя)
-                           PING+=("GTRTFM")
-                           ;;
-                   esac 
+                   for j in ${J_ARR[@]}; do
+                       if [[ ${i} =~ ${j%%;*} ]]; then
+                           PING+=(${j##*;})
+                       fi
+                   done
                done
-                
+
                if [[ ! -z ${PING[@]} ]]; then
                    USERNAMES=()
                    for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
@@ -251,4 +255,3 @@ while sleep 1; do
     fi
    done
 done
-
