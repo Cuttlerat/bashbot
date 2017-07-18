@@ -225,7 +225,7 @@ while sleep 1; do
                ;;
 
            /roll)
-
+           
                TEXT=$(( RANDOM % 100 ))
                _send_text
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
@@ -233,9 +233,7 @@ while sleep 1; do
 
            /ping)
 
-
                PING=()
-
                for I_ARGS in ${ARGS,,}; do
                    for I_REGEXP in "${J_ARR[@]}"; do
                        if [[ ${I_ARGS} =~ ${I_REGEXP%%;*} ]]; then
@@ -255,7 +253,6 @@ while sleep 1; do
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
                fi
                ;;
-
         esac
 
         LAST_ID="${MESSAGE_ID}"
