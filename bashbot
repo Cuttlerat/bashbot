@@ -81,11 +81,13 @@ function _load_pingers {
                J_ARR=()
 
                for I_USER in $( seq 0 $(( ${J_COUNT:=0} - 1 )) 2>/dev/null ); do
-                        J_USERNAME=$( jq -r  .users["${I_USER}"].username             "${J_PINGERS}" )
-                    J_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${J_PINGERS}" ) 
+
+                        J_USERNAME=$( jq -r  .users["${I_USER}"].username             "${J_PINGERS}"  )
+                    J_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${J_PINGERS}"  ) 
                    for I_REGEXP in $( seq 0 $(( ${J_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
-                          J_REGEXP=$( jq -r .users["${I_USER}"].regexp["${I_REGEXP}"] "${J_PINGERS}" )
-                             J_ARR+=( "${J_REGEXP};${J_USERNAME}"                                    )
+
+                          J_REGEXP=$( jq -r  .users["${I_USER}"].regexp["${I_REGEXP}"] "${J_PINGERS}" )
+                             J_ARR+=( "${J_REGEXP};${J_USERNAME}" )
                    done
                done
 
@@ -128,7 +130,7 @@ while sleep 1; do
 
         case "${COMMAND}" in
 
-            /w|/weather)
+           /w|/weather)
 
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -207,7 +209,7 @@ while sleep 1; do
                 _log_echo "$TEXT"
                 ;;
 
-            /md5)
+           /md5)
 
                 TEXT=$( md5sum <<< "${ARGS}" | awk '{print $1}' )
                 _send_text
