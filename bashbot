@@ -111,7 +111,10 @@ while sleep 1; do
 
       UPDATE_ID=$( jq .result[$i].update_id                       <<< "${RAW_MESSAGE}"  )
         CHAT_ID=$( jq .result[$i].message.chat.id                 <<< "${RAW_MESSAGE}"  )
-        MESSAGE=$( jq  -r .result[$i].message.text                <<< "${RAW_MESSAGE}"  | sed -r "s/${BOTNAME}//" )
+        PRIVATE=$( jq  -r .result[$i].message.chat.type           <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
+      CMD_CHECK=$( jq  -r .result[$i].message.text                <<< "${RAW_MESSAGE}"  )
+        MESSAGE=$( sed -r "s/${BOTNAME}//"                        <<< "${CMD_CHECK}"    )
+        [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
         MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'    <<< "${MESSAGE}"      )
 
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
@@ -255,6 +258,16 @@ while sleep 1; do
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
                fi
                ;;
+
+           /*)
+
+               if ${PRIVATE} || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
+                   TEXT="No such command"                                                   
+                   _send_text                                                               
+                   _log_echo "Bad command \"${CMD_CHECK}\" by @${SENDER}"
+               fi
+               ;;
+
         esac
 
         LAST_ID="${MESSAGE_ID}"
