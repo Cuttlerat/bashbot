@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 #---------------------------------------------------------------------------
 #
@@ -103,16 +103,17 @@ while sleep 1; do
     RAW_MESSAGE=$( curl -s "${URL}/getUpdates" )
       MSG_COUNT=$( jq '.result | length' <<< "${RAW_MESSAGE}" )
 
-    for i in $( seq 0 "${MSG_COUNT:=0}" ); do
+    for i in $( seq 1 "${MSG_COUNT:=0}" ); do
 
-     MESSAGE_ID=$( jq .result[$i].message.message_id              <<< "${RAW_MESSAGE}"  )
+        RESULT_COUNTER=$(( i-1 ))
+        MESSAGE_ID=$( jq .result[${RESULT_COUNTER}].message.message_id           <<< "${RAW_MESSAGE}"  )
 
      if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
 
-      UPDATE_ID=$( jq .result[$i].update_id                       <<< "${RAW_MESSAGE}"  )
-        CHAT_ID=$( jq .result[$i].message.chat.id                 <<< "${RAW_MESSAGE}"  )
-        PRIVATE=$( jq  -r .result[$i].message.chat.type           <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
-      CMD_CHECK=$( jq  -r .result[$i].message.text                <<< "${RAW_MESSAGE}"  )
+      UPDATE_ID=$( jq .result[${RESULT_COUNTER}].update_id                       <<< "${RAW_MESSAGE}"  )
+        CHAT_ID=$( jq .result[${RESULT_COUNTER}].message.chat.id                 <<< "${RAW_MESSAGE}"  )
+        PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type           <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
+      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                <<< "${RAW_MESSAGE}"  )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                        <<< "${CMD_CHECK}"    )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
         MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'    <<< "${MESSAGE}"      )
@@ -129,7 +130,7 @@ while sleep 1; do
 
            ARGS=$( awk '{$1="";print $0}'                         <<< "${MESSAGE}"      | xargs 2>/dev/null )
         COMMAND=$( awk '{print $1}'                               <<< "${MESSAGE}"      )
-         SENDER=$( jq  -r .result[$i].message.from.username       <<< "${RAW_MESSAGE}"  )
+         SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username       <<< "${RAW_MESSAGE}"  )
 
         case "${COMMAND}" in
 
