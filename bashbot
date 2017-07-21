@@ -62,8 +62,8 @@ function _loglist {
 
 function _qcycle {
 
-               QCOUNT="$( sed 's/.*[^0-9].*/1/' <<< "${ARGS}" )"
-               [[ ${QCOUNT:=1} -ge 5 ]] && QCOUNT=5
+               QCOUNT="$( sed -r 's/^[^1-5]$/1/;s/^[0-9]*$/5/;s/^[^0-9]*$/1/' <<< "${ARGS}" )"
+               #[[ ${QCOUNT:=1} -ge 5 ]] && QCOUNT=5
                for ((i=0;i<QCOUNT;i++)); do
                    _"$1"
                done
