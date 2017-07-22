@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 #---------------------------------------------------------------------------
 #
@@ -94,6 +94,7 @@ function _load_pingers {
 
 #=========FILES CHECKING====================================================
 
+[[ ! -d    "/data"     ]] && mkdir /data
 [[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
 [[ ! -f "${J_PINGERS}" ]] && touch "${J_PINGERS}"
 
