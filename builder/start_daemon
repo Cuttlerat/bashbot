@@ -1,0 +1,7 @@
+#!/bin/bash
+
+. $( dirname $0 )/.start_info
+
+while :; do 
+    sudo docker run -v ~/Git/bashbot/data:/data -it --pids-limit 100 bashbot ${BOT_TOKEN} ${WEATHER_TOKEN}
+done
