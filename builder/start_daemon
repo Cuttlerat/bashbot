@@ -18,8 +18,8 @@ EOF
     exit 1
 fi
 
-[[ ${BOT_TOKEN?"BOT_TOKEN is not declared"} ]]
-[[ ${WEATHER_TOKEN?"WEATHER_TOKEN is not declared"} ]]
+[[ ${BOT_TOKEN?"BOT_TOKEN is not declared in .start_info file"} ]]
+[[ ${WEATHER_TOKEN?"WEATHER_TOKEN is not declared in .start_info file"} ]]
 
 while :; do 
     sudo docker run -v ~/Git/bashbot/data:/data -it --pids-limit 100 bashbot ${BOT_TOKEN} ${WEATHER_TOKEN}
