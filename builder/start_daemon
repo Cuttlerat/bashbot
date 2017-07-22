@@ -1,6 +1,25 @@
 #!/bin/bash
 
-. $( dirname $0 )/.start_info
+CONFIG="$( dirname $0 )/.start_info"
+
+if [[ -s "${CONFIG}" ]]; then
+    source "${CONFIG}"
+else 
+    cat <<EOF 
+
+You need to create a file .start_info into directory with this script
+and declare two variables "BOT_TOKEN" and "WEATHER_TOKEN" in this file
+Example of .start_info file:
+
+BOT_TOKEN="YOUR BOT TOKEN"
+WEATHER_TOKEN="YOUR WEATHER TOKEN"
+
+EOF
+    exit 1
+fi
+
+[[ ${BOT_TOKEN?"BOT_TOKEN is not declared"} ]]
+[[ ${WEATHER_TOKEN?"WEATHER_TOKEN is not declared"} ]]
 
 while :; do 
     sudo docker run -v ~/Git/bashbot/data:/data -it --pids-limit 100 bashbot ${BOT_TOKEN} ${WEATHER_TOKEN}
