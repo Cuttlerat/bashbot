@@ -56,7 +56,7 @@ data/.pingers_json
 ```
 {
     "users": [
-    { "username": "@cuttlebot", "regexp": [ "[Cc]uttlerat", "[Cc]uttle" ] }
+    { "username": "@Cuttlerat", "regexp": [ "[Cc]uttlerat", "[Cc]uttle" ] }
     ]
 }
 ```
