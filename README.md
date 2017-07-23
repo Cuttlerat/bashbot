@@ -42,3 +42,24 @@ docker run cuttlerat/bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
 
 Токен для погоды брать здесь: https://www.worldweatheronline.com/ <br>
 Зарегистрировать бота здесь: https://telegram.me/BotFather
+
+Так же в директории с ботом вам понадобится создать директорию data с двумя файлами
+
+```
+data/.locations
+data/.pingers_json
+
+```
+В первый файл бот будет сохранять все данные о городах введенные через команду /wset (формат: username;sity)
+Во втором файле должны быть регулярки (если вам это нужно) для автоматического вызова участников чата по @username при упоминании регулярки, пример:
+
+```
+{
+    "users": [
+    { "username": "@cuttlebot", "regexp": [ "[Cc]uttlerat", "[Cc]uttle" ] }
+    ]
+}
+```
+Внимание! Используются самые простые регулярные выражения POSIX, не PCRE!
+
+
