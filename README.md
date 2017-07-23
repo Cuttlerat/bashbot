@@ -48,8 +48,8 @@ docker run cuttlerat/bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 data/.locations
 data/.pingers_json
-
 ```
+
 В первый файл бот будет сохранять все данные о городах введенные через команду /wset (формат: username;sity)
 Во втором файле должны быть регулярки (если вам это нужно) для автоматического вызова участников чата по @username при упоминании регулярки, пример:
 
