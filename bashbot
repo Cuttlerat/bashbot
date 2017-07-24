@@ -74,6 +74,11 @@ function _log_echo {
                date +"[%H:%M]: $1" 1>&2
 }
 
+function _offset {
+
+               curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
+}
+
 function _load_pingers {
 
                J_COUNT=$( jq -r '.users | length' "${J_PINGERS}") 
@@ -194,7 +199,7 @@ while sleep 1; do
                 TEXT="Rebooting..."
                 _send_text
                 _log_echo "Reboot by @${SENDER}"
-                curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
+                _offset
                 exit
                 ;;
 
@@ -286,7 +291,7 @@ while sleep 1; do
         esac
 
         LAST_ID="${MESSAGE_ID}"
-        curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
+        _offset
     fi
    done
 done
