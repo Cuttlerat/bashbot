@@ -194,6 +194,7 @@ while sleep 1; do
                 TEXT="Rebooting..."
                 _send_text
                 _log_echo "Reboot by @${SENDER}"
+                curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
                 exit
                 ;;
 
