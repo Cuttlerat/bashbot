@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #---------------------------------------------------------------------------
 #
@@ -191,7 +191,6 @@ while sleep 1; do
 
            /restart|/reboot)
 
-                if [[ ! -z $LAST_ID ]]; then
                     TEXT="Rebooting..."
                     _send_text
                     _log_echo "Reboot by @${SENDER}"
@@ -201,7 +200,7 @@ while sleep 1; do
 
            /wset)
                 
-                if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Ee]mpty ]]; then
+                if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
                     if grep -q "${SENDER}" "${LOCATIONS}"; then 
                         sed -i "/${SENDER}/d" "${LOCATIONS}"
                         TEXT="Deleted information about @${SENDER}"
