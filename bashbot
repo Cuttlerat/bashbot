@@ -191,11 +191,10 @@ while sleep 1; do
 
            /restart|/reboot)
 
-                    TEXT="Rebooting..."
-                    _send_text
-                    _log_echo "Reboot by @${SENDER}"
-                    exit
-                fi
+                TEXT="Rebooting..."
+                _send_text
+                _log_echo "Reboot by @${SENDER}"
+                exit
                 ;;
 
            /wset)
