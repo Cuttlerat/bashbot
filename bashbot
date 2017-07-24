@@ -116,32 +116,31 @@ while sleep 1; do
     for i in $( seq 1 "${MSG_COUNT:=0}" ); do
 
         RESULT_COUNTER=$(( i-1 ))
-        MESSAGE_ID=$( jq .result[${RESULT_COUNTER}].message.message_id           <<< "${RAW_MESSAGE}"  )
-
-     if [[ "${MESSAGE_ID}" -ne "${LAST_ID}" ]]; then
 
       UPDATE_ID=$( jq .result[${RESULT_COUNTER}].update_id                       <<< "${RAW_MESSAGE}"  )
         CHAT_ID=$( jq .result[${RESULT_COUNTER}].message.chat.id                 <<< "${RAW_MESSAGE}"  )
         PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type           <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
       CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                <<< "${RAW_MESSAGE}"  )
-        MESSAGE=$( sed -r "s/${BOTNAME}//"                        <<< "${CMD_CHECK}"    )
+        MESSAGE=$( sed -r "s/${BOTNAME}//"                                       <<< "${CMD_CHECK}"    )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
-        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'    <<< "${MESSAGE}"      )
-        MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"       <<< "${MESSAGE}"      )
+        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'                   <<< "${MESSAGE}"      )
+        MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"                      <<< "${MESSAGE}"      )
 
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'      <<< "${MESSAGE,,}"    )
+           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                     <<< "${MESSAGE,,}"    )
             for k in "${J_ARR[@]}"; do
                if [[ "${PING_MESSAGE,,}" =~ ${k%%;*} ]]; then
-                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"  <<< "${PING_MESSAGE}" )
+                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                 <<< "${PING_MESSAGE}" )
                 break
             fi
             done
         fi
 
-           ARGS=$( awk '{$1="";print $0}'                         <<< "${MESSAGE}"      | xargs 2>/dev/null )
-        COMMAND=$( awk '{print $1}'                               <<< "${MESSAGE}"      )
+           ARGS=$( awk '{$1="";print $0}'                                        <<< "${MESSAGE}"      | xargs 2>/dev/null )
+        COMMAND=$( awk '{print $1}'                                              <<< "${MESSAGE}"      )
          SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username       <<< "${RAW_MESSAGE}"  )
+
+#=========COMMANDS==========================================================
 
         case "${COMMAND}" in
 
@@ -290,8 +289,6 @@ while sleep 1; do
 
         esac
 
-        LAST_ID="${MESSAGE_ID}"
         _offset
-    fi
    done
 done
