@@ -1,15 +1,15 @@
-#!/bin/bash
-
-#---------------------------------------------------------------------------
+#!/bin/bash -
+#===============================================================================
 #
 #    DESCRIPTION: Telegram weather bot
 #         AUTHOR: Kioller Alexey
 #         E-MAIL: avkioller@gmail.com
-#           DATE: 07.07.2017
+#         GITHUB: https://github.com/Cuttlerat/bashbot
+#        CREATED: 07.07.2017
 #
-#---------------------------------------------------------------------------
+#===============================================================================
 
-#==========CONSTANTS========================================================
+#===  CONSTANTS  ===============================================================
 
     readonly          KEY="$1"
     readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
@@ -20,7 +20,26 @@
     readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
                                jq .result.username    | tr -d '"' )"
 
-#==========FUNCTIONS========================================================
+#===  FUNCTIONS  ===============================================================
+
+#===  FUNCTION  ================================================================
+#         NAME:  usage
+#  DESCRIPTION:  Display usage information.
+#===============================================================================
+
+function _usage ()
+{
+	cat <<- EOF
+
+  Usage :  ${0##/*/} [options] [--] "<BOT-TOKEN>" "<WEATHER_TOKEN>"
+
+  Github:  https://github.com/Cuttlerat/bashbot
+
+  Options: 
+  -h|help       Display this message
+
+	EOF
+}    # ----------  end of function _usage  ----------
 
 function _send_text {
 
@@ -30,7 +49,7 @@ function _send_text {
             --data-urlencode "text=${TEXT}"                                   \
                       --data "chat_id=${CHAT_ID}"                             \
                       --data "disable_web_page_preview=${PREVIEW}"                     
-}
+}    # ----------  end of function _send_text  ----------
 
 function _weather_request {
 
@@ -41,7 +60,8 @@ function _weather_request {
                             --data "date=today"                               \
                             --data "fx24=yes"                                 \
                             --data "lang=ru"                                
-}
+}    # ----------  end of function _weather_request  ----------
+
 
 function _ibash {
 
@@ -50,7 +70,8 @@ function _ibash {
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
                         sed '1s/ +.*//'                                      )"
                _send_text 1>&2
-}
+}    # ----------  end of function _ibash  ----------
+
 
 function _loglist {
 
@@ -58,7 +79,8 @@ function _loglist {
                         jq -r .id,.content                                   |\
                         sed '1s/^/#/' )"                              
                _send_text 1>&2
-}
+}    # ----------  end of function _loglist  ----------
+
 
 function _qcycle {
 
@@ -68,17 +90,17 @@ function _qcycle {
                    _"$1"
                done
                _log_echo "$1 ${QCOUNT} by @${SENDER}"
-}
+}    # ----------  end of function _qcycle  ----------
 
 function _log_echo {
 
                date +"[%H:%M]: $1" 1>&2
-}
+}    # ----------  end of function _log_echo  ----------
 
 function _offset {
 
                curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
-}
+}    # ----------  end of function _offset  ----------
 
 function _load_pingers {
 
@@ -96,15 +118,31 @@ function _load_pingers {
                    done
                done
 
-}
+}    # ----------  end of function _load_pingers  ----------
 
-#=========FILES CHECKING====================================================
+#-----------------------------------------------------------------------
+#  Handle command line arguments
+#-----------------------------------------------------------------------
+
+while getopts "h" opt
+do
+  case $opt in
+
+    h|help )  usage; exit 0   ;;
+
+    ? )  usage; exit 1  ;;
+
+  esac    
+done
+shift $(($OPTIND-1))
+
+#===  FILES CHECKING  ==========================================================
 
 [[ ! -d    "/data"     ]] && mkdir /data
 [[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
 [[ ! -f "${J_PINGERS}" ]] && touch "${J_PINGERS}"
 
-#=========START=============================================================
+#===  START  ===================================================================
 
 _log_echo "Started"
 _load_pingers
@@ -141,7 +179,7 @@ while sleep 1; do
         COMMAND=$( awk '{print $1}'                                              <<< "${MESSAGE}"      )
          SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username       <<< "${RAW_MESSAGE}"  )
 
-#=========COMMANDS==========================================================
+#===  COMMANDS  ================================================================
 
         case "${COMMAND}" in
 
