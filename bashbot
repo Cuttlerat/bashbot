@@ -31,7 +31,7 @@ function _usage ()
 {
 	cat <<- EOF
 
-  Usage :  ${0##/*/} [options] [--] "<BOT-TOKEN>" "<WEATHER_TOKEN>"
+  Usage :  ${0##/*/} [options] [--] "<BOT_TOKEN>" "<WEATHER_TOKEN>"
 
   Github:  https://github.com/Cuttlerat/bashbot
 
