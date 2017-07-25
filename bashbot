@@ -40,8 +40,13 @@ function _usage ()
   -h|help       Display this message
 
 	EOF
+
 }    # ----------  end of function _usage  ----------
 
+#===  FUNCTION  ================================================================
+#          NAME:  _send_text
+#   DESCRIPTION:  Sending request to telegram api
+#===============================================================================
 function _send_text {
 
     curl -s "${URL}/sendMessage"                                              \
@@ -50,8 +55,13 @@ function _send_text {
             --data-urlencode "text=${TEXT}"                                   \
                       --data "chat_id=${CHAT_ID}"                             \
                       --data "disable_web_page_preview=${PREVIEW}"                     
+
 }    # ----------  end of function _send_text  ----------
 
+#===  FUNCTION  ================================================================
+#          NAME:  _weather_request
+#   DESCRIPTION:  Sending request to https://worldweatheronline.com/ api
+#===============================================================================
 function _weather_request {
 
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
@@ -62,9 +72,13 @@ function _weather_request {
                             --data "date=today"                               \
                             --data "fx24=yes"                                 \
                             --data "lang=ru"                                
+
 }    # ----------  end of function _weather_request  ----------
 
-
+#===  FUNCTION  ================================================================
+#          NAME:  _ibash
+#   DESCRIPTION:  Getting randow quote from http://ibash.org.ru
+#===============================================================================
 function _ibash {
 
                TEXT="$( curl -s http://ibash.org.ru/random.php               |\
@@ -72,38 +86,66 @@ function _ibash {
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
                         sed '1s/ +.*//'                                      )"
                _send_text 1>&2
+
 }    # ----------  end of function _ibash  ----------
 
-
+#===  FUNCTION  ================================================================
+#          NAME:  _loglist
+#   DESCRIPTION:  Getting randow quote from http://loglist.net
+#===============================================================================
 function _loglist {
 
                TEXT="$( curl -sL https://loglist.net/api/quote/random        |\
                         jq -r .id,.content                                   |\
                         sed '1s/^/#/' )"                              
                _send_text 1>&2
+
 }    # ----------  end of function _loglist  ----------
 
-
+#===  FUNCTION  ================================================================
+#          NAME:  _qcycle
+#   DESCRIPTION:  Cycle for a quotes functions
+#===============================================================================
 function _qcycle {
 
-               QCOUNT="$( sed -r 's/^[^1-5]$/5/;s/^[0-9]{2,}$/5/;s/.*[^0-9].*/1/' <<< "${ARGS}" )"
+               QCOUNT="$( sed -r 's/^[^1-5]$/5/;
+                                  s/^[0-9]{2,}$/5/;
+                                  s/.*[^0-9].*/1/' <<< "${ARGS}" )"
                [[ ${QCOUNT:=1} ]]
                for ((i=0;i<QCOUNT;i++)); do
                    _"$1"
                done
                _log_echo "$1 ${QCOUNT} by @${SENDER}"
+
 }    # ----------  end of function _qcycle  ----------
 
+#===  FUNCTION  ================================================================
+#          NAME:  _log_echo
+#   DESCRIPTION:  Echo into log with timestamp
+#===============================================================================
 function _log_echo {
 
                date +"[%H:%M]: $1" 1>&2
+
 }    # ----------  end of function _log_echo  ----------
 
+#===  FUNCTION  ================================================================
+#          NAME:  _offset
+#   DESCRIPTION:  Making offset for processed messages
+#===============================================================================
 function _offset {
 
-               curl -s "${URL}/getUpdates" --data "offset=$((UPDATE_ID + 1))" -o /dev/null
+               curl -s "${URL}/getUpdates" \
+                    --data "offset=$((UPDATE_ID + 1))" \
+                    -o /dev/null
+
 }    # ----------  end of function _offset  ----------
 
+#===  FUNCTION  ================================================================
+#          NAME:  _load_pingers
+#   DESCRIPTION:  Loading json with usernames and regex for its
+#      REQUIRES:  ${J_PINGERS}
+#===============================================================================
 function _load_pingers {
 
                J_COUNT=$( jq -r '.users | length' "${J_PINGERS}") 
@@ -121,6 +163,8 @@ function _load_pingers {
                done
 
 }    # ----------  end of function _load_pingers  ----------
+
+#===  END OF FUNCTIONS  ========================================================
 
 #-----------------------------------------------------------------------
 #  Handle command line arguments
