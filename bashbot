@@ -11,13 +11,14 @@
 
 #===  CONSTANTS  ===============================================================
 
-    readonly          KEY="$1"
-    readonly  WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
-    readonly    LOCATIONS="/data/.locations"
-    readonly    J_PINGERS="/data/.pingers.json"
-    readonly      TIMEOUT="10"
-    readonly          URL="https://api.telegram.org/bot${KEY}"
-    readonly      BOTNAME="@$( curl -s "${URL}/getMe" |           \
+    readonly             KEY="$1"
+    readonly     WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
+    readonly       LOCATIONS="/data/.locations"
+    readonly       J_PINGERS="/data/.pingers.json"
+    readonly  DEFAULT_CITY_2="Ленинград"
+    readonly         TIMEOUT="10"
+    readonly             URL="https://api.telegram.org/bot${KEY}"
+    readonly         BOTNAME="@$( curl -s "${URL}/getMe" |           \
                                jq .result.username    | tr -d '"' )"
 
 #===  FUNCTIONS  ===============================================================
@@ -54,7 +55,7 @@ function _send_text {
 function _weather_request {
 
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
-                  --data-urlencode "q=${ARGS:="Ленинград"}"                   \
+                  --data-urlencode "q=${ARGS:="${DEFAULT_CITY_2}"}"           \
                             --data "key=${WEATHER_KEY}"                       \
                             --data "format=json"                              \
                             --data "timezone=yes"                             \
@@ -186,7 +187,11 @@ while sleep 1; do
 
            /w|/weather)
 
-                   [[ ! "${ARGS}" =~ ]]
+               #-------------------------------------------------------------------------------
+               # Trying to fix https://github.com/Cuttlerat/bashbot/issues/5
+                       ARGS=$( sed 's/^\s*$/'"${DEFAULT_CITY_2}"'/g' ) 
+               #-------------------------------------------------------------------------------
+
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
