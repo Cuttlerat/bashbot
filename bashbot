@@ -202,28 +202,45 @@ while sleep 1; do
 
         RESULT_COUNTER=$(( i-1 ))
 
-      UPDATE_ID=$( jq .result[${RESULT_COUNTER}].update_id                       <<< "${RAW_MESSAGE}"  )
-        CHAT_ID=$( jq .result[${RESULT_COUNTER}].message.chat.id                 <<< "${RAW_MESSAGE}"  )
-        PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type           <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
-      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                <<< "${RAW_MESSAGE}"  )
-        MESSAGE=$( sed -r "s/${BOTNAME}//"                                       <<< "${CMD_CHECK}"    )
-        [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
-        MESSAGE=$( sed -r 's/^ч(е|ё|то) (такое|за)/\/google/i'                   <<< "${MESSAGE}"      )
-        MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"                      <<< "${MESSAGE}"      )
+      UPDATE_ID=$( jq .result[${RESULT_COUNTER}].update_id                          <<< "${RAW_MESSAGE}"  )
+        CHAT_ID=$( jq .result[${RESULT_COUNTER}].message.chat.id                    <<< "${RAW_MESSAGE}"  )
 
+        #-------------------------------------------------------------------------------
+        # Checking that the command was sent to your bot
+        #-------------------------------------------------------------------------------
+        PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
+      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  )
+        MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
+        [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
+
+        #-------------------------------------------------------------------------------
+        # Google command parser
+        #-------------------------------------------------------------------------------
+        MESSAGE=$( sed -r 's#^(окей,? гугл,? )?(ч(е|ё|то) (такое|за))\s+(.+)#/google \5#i'                \
+                                                                                    <<< "${MESSAGE}"      )
+        MESSAGE=$( sed -r 's#^(окей,? гугл,?)\s+(.+)#/google \2#i'                  <<< "${MESSAGE}"      )
+
+        #-------------------------------------------------------------------------------
+        # Rick and Morty easter egg
+        #-------------------------------------------------------------------------------
+        MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"                         <<< "${MESSAGE}"      )
+
+        #-------------------------------------------------------------------------------
+        # Parsing pingers in message if message doesn't start with command
+        #-------------------------------------------------------------------------------
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                     <<< "${MESSAGE,,}"    )
+           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                        <<< "${MESSAGE,,}"    )
             for k in "${J_ARR[@]}"; do
                if [[ "${PING_MESSAGE,,}" =~ ${k%%;*} ]]; then
-                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                 <<< "${PING_MESSAGE}" )
+                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                    <<< "${PING_MESSAGE}" )
                 break
             fi
             done
         fi
 
-           ARGS=$( awk '{$1="";print $0}'                                        <<< "${MESSAGE}"      | xargs 2>/dev/null )
-        COMMAND=$( awk '{print $1}'                                              <<< "${MESSAGE}"      )
-         SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username       <<< "${RAW_MESSAGE}"  )
+           ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
+        COMMAND=$( awk '{print $1}'                                                 <<< "${MESSAGE}"      )
+         SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username          <<< "${RAW_MESSAGE}"  )
 
 #===  COMMANDS  ================================================================
 
@@ -233,7 +250,7 @@ while sleep 1; do
 
                #-------------------------------------------------------------------------------
                # Trying to fix https://github.com/Cuttlerat/bashbot/issues/5
-                       ARGS=$( sed 's/^\s*$/'"${DEFAULT_CITY_2}"'/g' ) 
+                       ARGS=$( sed 's/^\s*$/'"${DEFAULT_CITY_2}"'/g' <<< "${ARGS}" ) 
                #-------------------------------------------------------------------------------
 
                 RAW_WEATHER=$( _weather_request )
