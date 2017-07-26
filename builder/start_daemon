@@ -22,9 +22,13 @@ fi
 [[ ${WEATHER_TOKEN?"WEATHER_TOKEN is not declared in .start_info file"} ]]
 
 while :; do
-    sudo docker run -it --restart always    \
-                --pids-limit 100            \
-                -v ~/Git/bashbot/data:/data \
-                --name bashbot              \
-                bashbot ${BOT_TOKEN} ${WEATHER_TOKEN} 
+    sudo docker run -it --restart always                    \
+                --pids-limit 100                            \
+                -v ~/Git/bashbot/data:/data                 \
+                --name bashbot                              \
+                bashbot ${BOT_TOKEN} ${WEATHER_TOKEN}       \
+                2>/dev/null                                 \
+    || [[ $? -eq 125 ]]                                     \
+    && sudo docker rm -f bashbot &>/dev/null                \
+    && ./$0
 done
