@@ -247,11 +247,6 @@ while sleep 1; do
 
            /w|/weather)
 
-               #-------------------------------------------------------------------------------
-               # Trying to fix https://github.com/Cuttlerat/bashbot/issues/5
-                       ARGS=$( sed 's/^\s*$/'"${DEFAULT_CITY_2}"'/g' <<< "${ARGS}" ) 
-               #-------------------------------------------------------------------------------
-
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
