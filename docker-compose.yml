@@ -1,0 +1,17 @@
+version: "3"
+services:
+    bashbot:
+        build: 
+            context: .
+        volumes:
+          - /home/rat/Git/bashbot/data:/data
+        command: [$BOT_TOKEN, $WEATHER_TOKEN]
+        env_file: builder/.start_info 
+    builder:
+        build:
+            context: .
+            dockerfile: Dockerfile.builder
+        volumes:
+          - /home/rat/Git/bashbot:/bashbot
+          - /home/rat/Git/bashbot/docker-compose.yml:/bashbot/docker-compose.yml
+          - /var/run/docker.sock:/var/run/docker.sock

@@ -11,8 +11,8 @@
 
 #===  CONSTANTS  ===============================================================
 
-    readonly             KEY="$1"
-    readonly     WEATHER_KEY="$2"        # https://www.worldweatheronline.com/
+    readonly             KEY="${1:-${BOT_TOKEN}}"
+    readonly     WEATHER_KEY="${2:-${WEATHER_TOKEN}}"        # https://www.worldweatheronline.com/
     readonly       LOCATIONS="/data/.locations"
     readonly       J_PINGERS="/data/.pingers.json"
     readonly  DEFAULT_CITY_2="Ленинград"
