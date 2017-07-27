@@ -295,15 +295,6 @@ while sleep 1; do
                 _qcycle "loglist"
                 ;;
 
-           /restart|/reboot)
-
-                TEXT="Rebooting..."
-                _send_text
-                _log_echo "Reboot by @${SENDER}"
-                _offset
-                exit
-                ;;
-
            /wset)
                 
                 if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
