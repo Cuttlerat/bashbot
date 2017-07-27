@@ -5,4 +5,4 @@ RUN apk add --update --no-cache                \
     pip install 'docker-compose==1.14.0'     &&\
     cp /usr/share/zoneinfo/Europe/Moscow       \
        /etc/localtime
-ENTRYPOINT ["/bashbot/builder/auto_builder"]
+ENTRYPOINT ["/bashbot/builder/builder"]
