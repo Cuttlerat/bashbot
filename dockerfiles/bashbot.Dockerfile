@@ -5,4 +5,3 @@ RUN  apk add --update --no-cache             \
   && cp /usr/share/zoneinfo/Europe/Moscow    \
      /etc/localtime
 ENTRYPOINT ["/bashbot"]
-# vim: set syntax=dockerfile:
