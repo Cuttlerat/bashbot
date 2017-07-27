@@ -7,7 +7,7 @@ Cписок команд:
 ```
 /weather City   # Weather in city for now
 /w City         # Short form of /w
-/wset           # Set default city (information is stored in data/.locations)
+/wset           # Set default city (information stored in data/.locations)
 /ibash          # Random quote from ibash.org.ru
 /loglist        # Random quote from loglist.net
 /google String  # Sending a link to google.com/String 
