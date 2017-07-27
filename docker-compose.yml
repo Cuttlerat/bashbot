@@ -3,16 +3,15 @@ services:
     bashbot:
         build: 
             context: .
-            dockerfile: dockerfiles/Dockerfile.bashbot
+            dockerfile: dockerfiles/bashbot.Dockerfile
         volumes:
           - ./data:/data
-        command: [$BOT_TOKEN, $WEATHER_TOKEN]
         env_file: builder/.tokens 
         restart: always
     builder:
         build:
             context: .
-            dockerfile: dockerfiles/Dockerfile.builder
+            dockerfile: dockerfiles/builder.Dockerfile
         volumes:
           - .:/bashbot
           - /var/run/docker.sock:/var/run/docker.sock
