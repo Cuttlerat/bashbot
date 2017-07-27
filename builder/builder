@@ -18,10 +18,6 @@ while :; do
     _log_echo "Waiting for updates"
     inotifywait -e modify ./bashbot &>/dev/null
 
-    _log_echo "Stopping bashbot"
-    docker-compose stop -t 1 bashbot &>/dev/null   \
-        || _log_echo "Error while stopping"
-
     _log_echo "Building new bashbot"
     docker-compose build bashbot &>/dev/null       \
         || _log_echo "Error while building"
@@ -30,9 +26,9 @@ while :; do
     docker-compose create bashbot &>/dev/null      \
         || _log_echo "Error while creating"
 
-    _log_echo "Starting bashbot"
-    docker-compose start bashbot &>/dev/null       \
-        || _log_echo "Error while starting"
+    _log_echo "Restarting bashbot"
+    docker-compose restart bashbot &>/dev/null     \
+        || _log_echo "Error while restarting"
 
     _log_echo "Started"
 
