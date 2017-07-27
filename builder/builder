@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# This is my CI for https://github.com/Cuttlerat/bashbot
+
+#===  FUNCTION  ================================================================
+#          NAME:  _log_echo
+#   DESCRIPTION:  Echo into log with timestamp
+#===============================================================================
+function _log_echo {
+
+               date +"[%H:%M]: $1" 1>&2
+
+}    # ----------  end of function _log_echo  ----------
+
+cd /bashbot
+
+while :; do
+    _log_echo "Waiting for updates"
+    inotifywait -e modify ./bashbot &>/dev/null
+
+    _log_echo "Stopping bashbot"
+    docker-compose stop -t 1 bashbot &>/dev/null   \
+        || _log_echo "Error while stopping"
+
+    _log_echo "Building new bashbot"
+    docker-compose build bashbot &>/dev/null       \
+        || _log_echo "Error while building"
+
+    _log_echo "Creating new container for bashbot"
+    docker-compose create bashbot &>/dev/null      \
+        || _log_echo "Error while creating"
+
+    _log_echo "Starting bashbot"
+    docker-compose start bashbot &>/dev/null       \
+        || _log_echo "Error while starting"
+
+    _log_echo "Started"
+
+done
