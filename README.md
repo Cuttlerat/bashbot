@@ -27,11 +27,10 @@
 ./bashbot <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
-Для того чтобы собрать и запустить свой Docker контейнер
+Для того чтобы собрать и запустить свой Docker контейнер, вам понадобится Docker Compose
 
 ```
-docker build -t bashbot .
-docker run bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
+docker-compose up --build bashbot 
 ```
 
 Также вы можете взять готовый контейнер с Dockerhub
@@ -43,7 +42,8 @@ docker run cuttlerat/bashbot -v ./data:/data <BOT_TOKEN> <WEATHER_TOKEN>
 Токен для погоды брать здесь: https://www.worldweatheronline.com/ <br>
 Зарегистрировать бота здесь: https://telegram.me/BotFather
 
-Так же в директории с ботом вам понадобится создать директорию data с двумя файлами
+В директории с ботом вам понадобится создать директорию data с двумя файлами 
+(в скором времени все планируется перенести в БД)
 
 ```
 data/.locations
