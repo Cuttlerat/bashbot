@@ -5,15 +5,15 @@
 Cписок команд:
 
 ```
-/weather City   # Weather in city for now
-/w City         # Short form of /w
-/wset           # Set default city (information stored in data/.locations)
-/ibash          # Random quote from ibash.org.ru
-/loglist        # Random quote from loglist.net
-/google String  # Sending a link to google.com/String 
-/reboot         # Rebooting a docker container
-/md5 String     # Creacting a md5 sum of String
-/info           # Information about bot
+/weather <City>   - Weather in city for now
+/w <City>         - Short form of /w
+/info             - Information about this bot  
+/wset <City>      - Set default city for /weather
+/ibash <Number>   - Random quote from ibash.org.ru
+/loglist <Number> - Random quote from loglist.net
+/roll             - Rolling a random number from 0 to 99
+/google <String>  - Sending a link to google.com/String 
+/md5 <String>     - Creating a md5 sum of String 
 ```
 
 ## Запуск 

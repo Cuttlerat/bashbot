@@ -302,7 +302,7 @@ while sleep 1; do
                      /loglist <Number>- Random quote from loglist.net
                      /roll - Rolling a random number from 0 to 99
                      /google <String> - Sending a link to google.com/String 
-                     /md5 <String> - Creacting a md5 sum of String " )
+                     /md5 <String> - Creating a md5 sum of String " )
                     
                _send_text
                ;;
