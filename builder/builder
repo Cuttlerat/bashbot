@@ -30,6 +30,4 @@ while :; do
     docker-compose restart bashbot &>/dev/null     \
         || _log_echo "Error while restarting"
 
-    _log_echo "Started"
-
 done
