@@ -245,6 +245,11 @@ while sleep 1; do
 
         case "${COMMAND}" in
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /weather or /w
+        #   DESCRIPTION:  Weather in the city for now
+        #    PARAMETERS:  City
+        #===============================================================================
            /w|/weather)
 
                 RAW_WEATHER=$( _weather_request )
@@ -267,6 +272,11 @@ while sleep 1; do
                 _log_echo "Weather \"${CITY}\" to @${SENDER}"                               
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /info
+        #   DESCRIPTION:  Information about this bot
+        #    PARAMETERS:  
+        #===============================================================================
            /info)
 
                 TEXT=$( sed 's/^\s\+//' <<<\
@@ -276,6 +286,11 @@ while sleep 1; do
                 _send_text
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /start
+        #   DESCRIPTION:  Default command of telegram bot
+        #    PARAMETERS:  
+        #===============================================================================
            /start)
 
                 TEXT=$( sed 's/^\s\+//' <<<\
@@ -285,16 +300,32 @@ while sleep 1; do
                 _send_text
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /ibash
+        #   DESCRIPTION:  Random quote from ibash.org.ru
+        #    PARAMETERS:  Number of quotes
+        #===============================================================================
            /ibash)
 
                 _qcycle "ibash"
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /loglist
+        #   DESCRIPTION:  Random quote from loglist.net
+        #    PARAMETERS:  Number of quotes
+        #===============================================================================
            /loglist)
 
                 _qcycle "loglist"
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /wset
+        #   DESCRIPTION:  Configure a default city for /weather command 
+        #                 for user who call it
+        #    PARAMETERS:  City or "Delete"
+        #===============================================================================
            /wset)
                 
                 if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
@@ -315,6 +346,11 @@ while sleep 1; do
                 _log_echo "$TEXT"
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /md5
+        #   DESCRIPTION:  Encode a message into md5
+        #    PARAMETERS:  String
+        #===============================================================================
            /md5)
 
                 TEXT=$( md5sum <<< "${ARGS}" | awk '{print $1}' )
@@ -322,6 +358,11 @@ while sleep 1; do
                 _log_echo "MD5 to @${SENDER}"
                 ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /google
+        #   DESCRIPTION:  Sending a link into google on a entered string
+        #    PARAMETERS:  String
+        #===============================================================================
            /google)
 
                ARGS=${ARGS//\?/}
@@ -332,6 +373,11 @@ while sleep 1; do
                PREVIEW=1
                ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /show
+        #   DESCRIPTION:  Sending a Rick and Morty yotube video 
+        #    PARAMETERS:  
+        #===============================================================================
            /show)
 
                PREVIEW=0
@@ -341,6 +387,11 @@ while sleep 1; do
                PREVIEW=1
                ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /roll
+        #   DESCRIPTION:  Rolling a random number from 0 to 99
+        #    PARAMETERS:  
+        #===============================================================================
            /roll)
            
                TEXT=$(( RANDOM % 100 ))
@@ -348,6 +399,13 @@ while sleep 1; do
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /ping
+        #   DESCRIPTION:  This is not for direct call. This command uses
+        #                 to call a user by a regular expression stroed into 
+        #                 ${J_PINGERS} file
+        #    PARAMETERS:  String
+        #===============================================================================
            /ping)
 
                PING=()
@@ -371,6 +429,11 @@ while sleep 1; do
                fi
                ;;
 
+        #===  COMMAND  =================================================================
+        #          NAME:  /ping
+        #   DESCRIPTION:  Default message when user calling incorrect command
+        #    PARAMETERS:  String
+        #===============================================================================
            /*)
 
                if ${PRIVATE} || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
