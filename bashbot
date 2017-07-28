@@ -19,12 +19,12 @@
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${KEY}"
     readonly         BOTNAME="@$( curl -s "${URL}/getMe" |           \
-                               jq .result.username    | tr -d '"' )"
+                                  jq .result.username    | tr -d '"' )"
 
 #===  FUNCTIONS  ===============================================================
 
 #===  FUNCTION  ================================================================
-#         NAME:  usage
+#         NAME:  _usage
 #  DESCRIPTION:  Display usage information.
 #===============================================================================
 
@@ -120,7 +120,7 @@ function _qcycle {
 
 #===  FUNCTION  ================================================================
 #          NAME:  _log_echo
-#   DESCRIPTION:  Echo into log with timestamp
+#   DESCRIPTION:  Echo into STDERR with timestamp
 #===============================================================================
 function _log_echo {
 
@@ -437,7 +437,7 @@ while sleep 1; do
                ;;
 
         #===  COMMAND  =================================================================
-        #          NAME:  /ping
+        #          NAME:  
         #   DESCRIPTION:  Default message when user calling incorrect command
         #    PARAMETERS:  String
         #===============================================================================
@@ -451,7 +451,6 @@ while sleep 1; do
                ;;
 
         esac
-
         _offset
    done
 done
