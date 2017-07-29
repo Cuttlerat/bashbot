@@ -187,7 +187,7 @@ shift $((OPTIND-1))
 
 #===  FILES CHECKING  ==========================================================
 
-[[ ! -d    "/data"     ]] && mkdir /data
+[[ ! -d    "./data"    ]] && mkdir ./data
 [[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
 [[ ! -f "${J_PINGERS}" ]] && touch "${J_PINGERS}"
 
