@@ -171,7 +171,7 @@ function _load_pingers {
 #  Handle command line arguments
 #-----------------------------------------------------------------------
 
-[[ -z ${BOT_TOKEN} ]] || [[ -z ${WEATHER_TOKEN} ]] && _usage && exit 1;
+[[ -z ${BOT_TOKEN} ]] && _usage && exit 1;
 
 while getopts "h" opt
 do
