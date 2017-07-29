@@ -11,13 +11,15 @@
 
 #===  CONSTANTS  ===============================================================
 
-    readonly             KEY="${1:-${BOT_TOKEN}}"
-    readonly     WEATHER_KEY="${2:-${WEATHER_TOKEN}}"        # https://www.worldweatheronline.com/
+    [[ "${BOT_TOKEN:="$1"}" ]]
+    [[ "${WEATHER_TOKEN:="$2"}" ]]
+    readonly       BOT_TOKEN
+    readonly   WEATHER_TOKEN
     readonly       LOCATIONS="./data/.locations"
     readonly       J_PINGERS="./data/.pingers.json"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
-    readonly             URL="https://api.telegram.org/bot${KEY}"
+    readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
     readonly         BOTNAME="@$( curl -s "${URL}/getMe" |           \
                                   jq .result.username    | tr -d '"' )"
 
@@ -66,7 +68,7 @@ function _weather_request {
 
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
                   --data-urlencode "q=${ARGS:="${DEFAULT_CITY_2}"}"           \
-                            --data "key=${WEATHER_KEY}"                       \
+                            --data "key=${WEATHER_TOKEN}"                       \
                             --data "format=json"                              \
                             --data "date=today"                               \
                             --data "fx24=yes"                                 \
@@ -169,7 +171,7 @@ function _load_pingers {
 #  Handle command line arguments
 #-----------------------------------------------------------------------
 
-[[ -z ${KEY} ]] || [[ -z ${WEATHER_KEY} ]] && _usage && exit 1;
+[[ -z ${BOT_TOKEN} ]] || [[ -z ${WEATHER_TOKEN} ]] && _usage && exit 1;
 
 while getopts "h" opt
 do
