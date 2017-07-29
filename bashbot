@@ -13,8 +13,8 @@
 
     readonly             KEY="${1:-${BOT_TOKEN}}"
     readonly     WEATHER_KEY="${2:-${WEATHER_TOKEN}}"        # https://www.worldweatheronline.com/
-    readonly       LOCATIONS="/data/.locations"
-    readonly       J_PINGERS="/data/.pingers.json"
+    readonly       LOCATIONS="./data/.locations"
+    readonly       J_PINGERS="./data/.pingers.json"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${KEY}"
@@ -168,6 +168,8 @@ function _load_pingers {
 #-----------------------------------------------------------------------
 #  Handle command line arguments
 #-----------------------------------------------------------------------
+
+[[ -z ${KEY} ]] || [[ -z ${WEATHER_KEY} ]] && _usage && exit 1;
 
 while getopts "h" opt
 do
