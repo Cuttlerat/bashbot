@@ -17,6 +17,7 @@
     readonly   WEATHER_TOKEN
     readonly       LOCATIONS="./data/.locations"
     readonly       J_PINGERS="./data/.pingers.json"
+    readonly        G_IGNORE="./data/.google_ignore.json"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
@@ -219,9 +220,20 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Google command parser
         #-------------------------------------------------------------------------------
-        MESSAGE=$( sed -r 's#^(окей,? гугл,? )?(ч(е|ё|то) (такое|за))\s+(.+)#/google \5#i'                \
-                                                                                    <<< "${MESSAGE}"      )
-        MESSAGE=$( sed -r 's#^(окей,? гугл,?)\s+(.+)#/google \2#i'                  <<< "${MESSAGE}"      )
+       G_LENGTH=$( jq '.regexp | length' "${G_IGNORE}"                                                    )
+        G_VALID=true
+      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
+        for ((g=0;g<G_LENGTH;g++)); do
+            if [[ "${R_MESSAGE}" =~ $( jq -r .regexp[${g}] "${G_IGNORE}" ) ]]; then
+                G_VALID=false
+                break
+            fi
+        done
+        if [[ "${G_VALID}" == "true" ]]; then
+            MESSAGE=$( sed -r 's#^(окей,? гугл,? )?(ч(е|ё|то) (такое|за))\s+(.+)#/google \5#i'            \
+                                                                                        <<< "${MESSAGE}"  )
+            MESSAGE=$( sed -r 's#^(окей,? гугл,?)\s+(.+)#/google \2#i'                  <<< "${MESSAGE}"  )
+        fi
 
         #-------------------------------------------------------------------------------
         # Rick and Morty easter egg
@@ -238,9 +250,8 @@ while sleep 1; do
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-           PING_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                        <<< "${MESSAGE,,}"    )
             for k in "${J_ARR[@]}"; do
-               if [[ "${PING_MESSAGE,,}" =~ ${k%%;*} ]]; then
+               if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
                 MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                    <<< "${PING_MESSAGE}" )
                 break
             fi
