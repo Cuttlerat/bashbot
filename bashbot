@@ -214,7 +214,7 @@ while sleep 1; do
         # Checking that the command was sent to your bot
         #-------------------------------------------------------------------------------
         PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
-      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  | xargs )
+      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  | xargs 2>/dev/null        )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
 
