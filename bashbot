@@ -16,7 +16,7 @@
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
     readonly       LOCATIONS="./data/.locations"
-    readonly       J_PINGERS="./data/.pingers.json"
+    readonly          P_JSON="./data/.pingers.json"
     readonly        G_IGNORE="./data/.google_ignore.json"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
@@ -146,21 +146,21 @@ function _offset {
 #===  FUNCTION  ================================================================
 #          NAME:  _load_pingers
 #   DESCRIPTION:  Loading json with usernames and regex for its
-#      REQUIRES:  ${J_PINGERS}
+#      REQUIRES:  ${P_JSON}
 #===============================================================================
 function _load_pingers {
 
-               J_COUNT=$( jq -r '.users | length' "${J_PINGERS}") 
-               J_ARR=()
+               P_COUNT=$( jq -r '.users | length' "${P_JSON}") 
+               P_ARR=()
 
-               for I_USER in $( seq 0 $(( ${J_COUNT:=0} - 1 )) 2>/dev/null ); do
+               for I_USER in $( seq 0 $(( ${P_COUNT:=0} - 1 )) 2>/dev/null ); do
 
-                        J_USERNAME=$( jq -r  .users["${I_USER}"].username             "${J_PINGERS}"  )
-                    J_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${J_PINGERS}"  ) 
-                   for I_REGEXP in $( seq 0 $(( ${J_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
+                        P_USERNAME=$( jq -r  .users["${I_USER}"].username             "${P_JSON}"  )
+                    P_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${P_JSON}"  ) 
+                   for I_REGEXP in $( seq 0 $(( ${P_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
 
-                          J_REGEXP=$( jq -r  .users["${I_USER}"].regexp["${I_REGEXP}"] "${J_PINGERS}" )
-                             J_ARR+=( "${J_REGEXP};${J_USERNAME}" )
+                          P_REGEXP=$( jq -r  .users["${I_USER}"].regexp["${I_REGEXP}"] "${P_JSON}" )
+                             P_ARR+=( "${P_REGEXP};${P_USERNAME}" )
                    done
                done
 
@@ -190,7 +190,8 @@ shift $((OPTIND-1))
 
 [[ ! -d    "./data"    ]] && mkdir ./data
 [[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
-[[ ! -f "${J_PINGERS}" ]] && touch "${J_PINGERS}"
+[[ ! -f "${P_JSON}"    ]] && touch "${P_JSON}"
+[[ ! -f "${G_IGNORE}"  ]] && touch "${G_IGNORE}"
 
 #===  START  ===================================================================
 
@@ -224,7 +225,7 @@ while sleep 1; do
         G_VALID=true
       R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
         for ((g=0;g<G_LENGTH;g++)); do
-            if [[ "${R_MESSAGE}" =~ $( jq -r .regexp[${g}] "${G_IGNORE}" ) ]]; then
+            if [[ "${R_MESSAGE}" =~ $( jq -r .regexp[${g}] "${G_IGNORE}" | sed 's/.*/\\b&\\b/' ) ]]; then
                 G_VALID=false
                 break
             fi
@@ -250,9 +251,9 @@ while sleep 1; do
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-            for k in "${J_ARR[@]}"; do
+            for k in "${P_ARR[@]}"; do
                if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
-                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                    <<< "${PING_MESSAGE}" )
+                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                    <<< "${R_MESSAGE}"    )
                 break
             fi
             done
@@ -431,14 +432,14 @@ while sleep 1; do
         #          NAME:  /ping
         #   DESCRIPTION:  This is not for direct call. This command uses
         #                 to call a user by a regular expression stroed into 
-        #                 ${J_PINGERS} file
+        #                 ${P_JSON} file
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
 
                PING=()
                for I_ARGS in ${ARGS,,}; do
-                   for I_REGEXP in "${J_ARR[@]}"; do
+                   for I_REGEXP in "${P_ARR[@]}"; do
                        if [[ ${I_ARGS} =~ ${I_REGEXP%%;*} ]]; then
                            PING+=(${I_REGEXP##*;})
                        fi
