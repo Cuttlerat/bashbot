@@ -15,8 +15,7 @@
     [[ "${WEATHER_TOKEN:="$2"}" ]]
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
-    readonly       LOCATIONS="./data/.locations"
-    readonly       DATA_JSON="./data/.data.json"
+    readonly        DATABASE="./data/database.db"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
@@ -142,29 +141,6 @@ function _offset {
 
 }    # ----------  end of function _offset  ----------
 
-#===  FUNCTION  ================================================================
-#          NAME:  _load_pingers
-#   DESCRIPTION:  Loading json with usernames and regex for its
-#      REQUIRES:  ${DATA_JSON}
-#===============================================================================
-function _load_pingers {
-
-               P_COUNT=$( jq -r '.pingers | length' "${DATA_JSON}") 
-               P_ARR=()
-
-               for I_USER in $( seq 0 $(( ${P_COUNT:=0} - 1 )) 2>/dev/null ); do
-
-                        P_USERNAME=$( jq -r  .pingers["${I_USER}"].username             "${DATA_JSON}"  )
-                    P_REGEXP_COUNT=$( jq -r ".pingers[${I_USER}].regexp | length"       "${DATA_JSON}"  ) 
-                   for I_REGEXP in $( seq 0 $(( ${P_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
-
-                          P_REGEXP=$( jq -r  .pingers["${I_USER}"].regexp["${I_REGEXP}"] "${DATA_JSON}" )
-                             P_ARR+=( "${P_REGEXP};${P_USERNAME}" )
-                   done
-               done
-
-}    # ----------  end of function _load_pingers  ----------
-
 #===  END OF FUNCTIONS  ========================================================
 
 #-----------------------------------------------------------------------
@@ -187,14 +163,12 @@ shift $((OPTIND-1))
 
 #===  FILES CHECKING  ==========================================================
 
-[[ ! -d    "./data"    ]] && mkdir ./data
-[[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
-[[ ! -f "${DATA_JSON}" ]] && touch "${DATA_JSON}"
+[[ ! -d    "./data"   ]] && mkdir ./data
+[[ ! -f "${DATABASE}" ]] && touch "${DATABASE}"
 
 #===  START  ===================================================================
 
 _log_echo "Started"
-_load_pingers
 
 while sleep 1; do
 
@@ -216,24 +190,31 @@ while sleep 1; do
                                                           sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
+      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
 
         #-------------------------------------------------------------------------------
         # Google command parser
         #-------------------------------------------------------------------------------
-       G_LENGTH=$( jq '.google_ignore | length' "${DATA_JSON}"                                            )
-        G_VALID=true
-      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
-        for ((g=0;g<G_LENGTH;g++)); do
-            if [[ "${R_MESSAGE}" =~ $( jq -r .google_ignore[${g}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
-                G_VALID=false
-                break
+        if [[ $( sqlite3 "${DATABASE}"                                                                    \
+           "SELECT EXISTS(
+                SELECT 1 FROM google_ignore 
+                WHERE \"${MESSAGE,,}\" 
+                LIKE '%'||google_ignore.ignore||'%'
+                ) LIMIT 1;" ) -eq 0 ]] &&                                                                 \
+           [[ $( sqlite3 "${DATABASE}"                                                                    \
+           "SELECT EXISTS(
+                SELECT 1 FROM google 
+                WHERE \"${MESSAGE,,}\" 
+                LIKE '%'||google.match||'%'
+                ) LIMIT 1;" ) -eq 1 ]]; then
+                MATCH=$( sqlite3 "${DATABASE}"                                                            \
+                        "SELECT * FROM google 
+                         WHERE \"${MESSAGE,,}\" 
+                         LIKE '%'||google.match||'%';"                                                    |\
+                         awk '{printf length; printf " "; print $0}'                                      |\
+                         sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                             ) 
+                MESSAGE=$( sed -r "s#${MATCH}#/google#i"                            <<< "${MESSAGE}"      )
             fi
-        done
-        if [[ "${G_VALID}" == "true" ]]; then
-            MESSAGE=$( sed -r 's#^(окей,? гугл,? )?(ч(е|ё|то) (такое|за))\s+(.+)#/google \5#i'            \
-                                                                                        <<< "${MESSAGE}"  )
-            MESSAGE=$( sed -r 's#^(окей,? гугл,?)\s+(.+)#/google \2#i'                  <<< "${MESSAGE}"  )
-        fi
 
         #-------------------------------------------------------------------------------
         # Rick and Morty easter egg
@@ -249,23 +230,14 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
-        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-            PPHRASE_LENGHT=$( jq '.ping_phrases | length' "${DATA_JSON}" )
-            P_VALID=false
-            for ((n=0;n<PPHRASE_LENGHT;n++)); do
-                if [[ "${R_MESSAGE}" =~ $( jq -r .ping_phrases[${n}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
-                    P_VALID=true
-                    break;
-                fi
-            done
-            if [[ "${P_VALID}" == "true" ]] ; then
-                for k in "${P_ARR[@]}"; do
-                   if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
-                    MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                <<< "${R_MESSAGE}"    )
-                    break
-                fi
-                done
-            fi
+        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                          \
+                                                           "SELECT EXISTS(
+                                                                SELECT 1 FROM ping_phrases 
+                                                                WHERE \"${R_MESSAGE}\" 
+                                                                LIKE '%'||ping_phrases.phrase||'%'
+                                                                ) LIMIT 1;"                               )\
+              -eq 1 ]]; then
+                    MESSAGE=$( sed -r "s/^/\/ping &/"                <<< "${R_MESSAGE//ё/е}"              )
         fi
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
@@ -283,7 +255,17 @@ while sleep 1; do
         #===============================================================================
            /w|/weather)
 
-                [[ -z ${ARGS} ]] && grep -q "${SENDER}" "${LOCATIONS}" && ARGS=$( sed -n "s/${SENDER};//p" "${LOCATIONS}" )
+                [[ -z ${ARGS} ]] && [[ $(sqlite3 "${DATABASE}"                                        \
+                                         "SELECT EXISTS(
+                                              SELECT 1 FROM locations
+                                              WHERE \"${SENDER}\"
+                                              LIKE locations.username
+                                              ) LIMIT 1;"                                             \
+                                         ) -eq 1 ]] && \
+                ARGS=$( sqlite3 "${DATABASE}" "SELECT city 
+                                              FROM locations 
+                                              WHERE \"${SENDER}\" 
+                                              LIKE locations.username;"                               )
 
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -366,19 +348,35 @@ while sleep 1; do
         #===============================================================================
            /wset)
                 
-                if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
-                    if grep -q "${SENDER}" "${LOCATIONS}"; then 
-                        sed -i "/${SENDER}/d" "${LOCATIONS}"
+                if [[ $(sqlite3 "${DATABASE}"                                     \
+                                     "SELECT EXISTS(
+                                          SELECT 1 FROM locations
+                                          WHERE \"${SENDER}\"
+                                          LIKE locations.username
+                                          ) LIMIT 1;"                             \
+                                     ) -eq 1 ]]; then
+                    if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
+                        sqlite3 "${DATABASE}"                                     \
+                            "DELETE FROM locations
+                             WHERE \"${SENDER}\"
+                             LIKE locations.username"
                         TEXT="Deleted information about @${SENDER}"
                     else
-                        TEXT="No information about @${SENDER}"
+                        sqlite3 "${DATABASE}"                                     \
+                            "UPDATE locations 
+                             SET city=\"${ARGS}\"
+                             WHERE username=\"${SENDER}\""
+                        TEXT="New city for @${SENDER}: ${ARGS}"
                     fi
-                elif grep -q "${SENDER}" "${LOCATIONS}"; then
-                    sed -i "s/${SENDER};.*/$SENDER;${ARGS}/" "${LOCATIONS}"
-                    TEXT="New city for @${SENDER}: ${ARGS}"
-                else 
-                    echo "${SENDER};${ARGS}" >> "${LOCATIONS}"
+                else
+                    if [[ -z ${ARGS} ]] || [[ ${ARGS} =~ [Dd]elete ]]; then
+                        TEXT="No information about @${SENDER}"
+                    else
+                    sqlite3 "${DATABASE}"                                        \
+                        "INSERT INTO locations(username, city)
+                         VALUES(\"${SENDER}\",\"${ARGS}\")"
                     TEXT="Added @${SENDER}: ${ARGS}"
+                    fi
                 fi
                 _send_text
                 _log_echo "$TEXT"
@@ -441,30 +439,19 @@ while sleep 1; do
         #          NAME:  /ping
         #   DESCRIPTION:  This is not for direct call. This command uses
         #                 to call a user by a regular expression stroed into 
-        #                 ${DATA_JSON} file
+        #                 ${DATABASE}
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
 
-               PING=()
-               for I_ARGS in ${ARGS,,}; do
-                   for I_REGEXP in "${P_ARR[@]}"; do
-                       if [[ ${I_ARGS} =~ ${I_REGEXP%%;*} ]]; then
-                           PING+=(${I_REGEXP##*;})
-                       fi
-                   done
-               done
+               TEXT=$( sqlite3 "${DATABASE}"                            \
+                   "SELECT username FROM pingers 
+                    WHERE \"${ARGS,,}\" 
+                    LIKE '%'||pingers.match||'%';"                      |\
+                    sed 's/^/@/' | xargs )
 
-               if [[ ! -z ${PING[*]} ]]; then
-                   USERNAMES=()
-                   for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
-
-                       USERNAMES+=("@${USERNAME}")
-                   done
-                   TEXT="${USERNAMES[*]}"
                    _send_text
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
-               fi
                ;;
 
         #===  COMMAND  =================================================================
