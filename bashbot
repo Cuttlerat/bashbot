@@ -16,8 +16,7 @@
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
     readonly       LOCATIONS="./data/.locations"
-    readonly          P_JSON="./data/.pingers.json"
-    readonly        G_IGNORE="./data/.google_ignore.json"
+    readonly       DATA_JSON="./data/.data.json"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
@@ -146,20 +145,20 @@ function _offset {
 #===  FUNCTION  ================================================================
 #          NAME:  _load_pingers
 #   DESCRIPTION:  Loading json with usernames and regex for its
-#      REQUIRES:  ${P_JSON}
+#      REQUIRES:  ${DATA_JSON}
 #===============================================================================
 function _load_pingers {
 
-               P_COUNT=$( jq -r '.users | length' "${P_JSON}") 
+               P_COUNT=$( jq -r '.pingers | length' "${DATA_JSON}") 
                P_ARR=()
 
                for I_USER in $( seq 0 $(( ${P_COUNT:=0} - 1 )) 2>/dev/null ); do
 
-                        P_USERNAME=$( jq -r  .users["${I_USER}"].username             "${P_JSON}"  )
-                    P_REGEXP_COUNT=$( jq -r ".users[${I_USER}].regexp | length"       "${P_JSON}"  ) 
+                        P_USERNAME=$( jq -r  .pingers["${I_USER}"].username             "${DATA_JSON}"  )
+                    P_REGEXP_COUNT=$( jq -r ".pingers[${I_USER}].regexp | length"       "${DATA_JSON}"  ) 
                    for I_REGEXP in $( seq 0 $(( ${P_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
 
-                          P_REGEXP=$( jq -r  .users["${I_USER}"].regexp["${I_REGEXP}"] "${P_JSON}" )
+                          P_REGEXP=$( jq -r  .pingers["${I_USER}"].regexp["${I_REGEXP}"] "${DATA_JSON}" )
                              P_ARR+=( "${P_REGEXP};${P_USERNAME}" )
                    done
                done
@@ -190,8 +189,7 @@ shift $((OPTIND-1))
 
 [[ ! -d    "./data"    ]] && mkdir ./data
 [[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
-[[ ! -f "${P_JSON}"    ]] && touch "${P_JSON}"
-[[ ! -f "${G_IGNORE}"  ]] && touch "${G_IGNORE}"
+[[ ! -f "${DATA_JSON}" ]] && touch "${DATA_JSON}"
 
 #===  START  ===================================================================
 
@@ -222,11 +220,11 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Google command parser
         #-------------------------------------------------------------------------------
-       G_LENGTH=$( jq '.regexp | length' "${G_IGNORE}"                                                    )
+       G_LENGTH=$( jq '.google_ignore | length' "${DATA_JSON}"                                            )
         G_VALID=true
       R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
         for ((g=0;g<G_LENGTH;g++)); do
-            if [[ "${R_MESSAGE}" =~ $( jq -r .regexp[${g}] "${G_IGNORE}" | sed 's/.*/\\b&\\b/' ) ]]; then
+            if [[ "${R_MESSAGE}" =~ $( jq -r .google_ignore[${g}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
                 G_VALID=false
                 break
             fi
@@ -433,7 +431,7 @@ while sleep 1; do
         #          NAME:  /ping
         #   DESCRIPTION:  This is not for direct call. This command uses
         #                 to call a user by a regular expression stroed into 
-        #                 ${P_JSON} file
+        #                 ${DATA_JSON} file
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
