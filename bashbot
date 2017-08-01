@@ -250,12 +250,22 @@ while sleep 1; do
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
         if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-            for k in "${P_ARR[@]}"; do
-               if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
-                MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                    <<< "${R_MESSAGE}"    )
-                break
-            fi
+            PPHRASE_LENGHT=$( jq '.ping_phrases | length' "${DATA_JSON}" )
+            P_VALID=false
+            for ((n=0;n<PPHRASE_LENGHT;n++)); do
+                if [[ "${R_MESSAGE}" =~ $( jq -r .ping_phrases[${n}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
+                    P_VALID=true
+                    break;
+                fi
             done
+            if [[ "${P_VALID}" == "true" ]] ; then
+                for k in "${P_ARR[@]}"; do
+                   if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
+                    MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                <<< "${R_MESSAGE}"    )
+                    break
+                fi
+                done
+            fi
         fi
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
