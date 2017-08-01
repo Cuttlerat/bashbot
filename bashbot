@@ -314,12 +314,12 @@ while sleep 1; do
                      /weather <City> - Weather in city for now
                      /w <City> - Short form of /w
                      /wset <City> - Set default city for /weather
-                     /info - Information about this bot  
                      /ibash <Number>- Random quote from ibash.org.ru
                      /loglist <Number>- Random quote from loglist.net
                      /roll - Rolling a random number from 0 to 99
                      /google <String> - Sending a link to google.com/String 
-                     /md5 <String> - Creating a md5 sum of String " )
+                     /md5 <String> - Creating a md5 sum of String 
+                     /info - Information about this bot" )
                     
                _send_text
                ;;
