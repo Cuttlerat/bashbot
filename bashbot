@@ -274,14 +274,14 @@ while sleep 1; do
         #===============================================================================
            /w|/weather)
 
+                [[ -z ${ARGS} ]] && grep -q "${SENDER}" "${LOCATIONS}" && ARGS=$( sed -n "s/${SENDER};//p" "${LOCATIONS}" )
+
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
                                xargs -i date -d 'TZ="UTC" {}' +"%H:%M" 2>/dev/null )
-
-                [[ -z ${ARGS} ]] && grep -q "${SENDER}" "${LOCATIONS}" && CITY=$( sed -n "s/${SENDER};//p" "${LOCATIONS}" )
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
