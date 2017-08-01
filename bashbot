@@ -17,6 +17,7 @@
     readonly   WEATHER_TOKEN
     readonly       LOCATIONS="./data/.locations"
     readonly       DATA_JSON="./data/.data.json"
+    readonly        DATABASE="./data/database.db"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
@@ -142,29 +143,6 @@ function _offset {
 
 }    # ----------  end of function _offset  ----------
 
-#===  FUNCTION  ================================================================
-#          NAME:  _load_pingers
-#   DESCRIPTION:  Loading json with usernames and regex for its
-#      REQUIRES:  ${DATA_JSON}
-#===============================================================================
-function _load_pingers {
-
-               P_COUNT=$( jq -r '.pingers | length' "${DATA_JSON}") 
-               P_ARR=()
-
-               for I_USER in $( seq 0 $(( ${P_COUNT:=0} - 1 )) 2>/dev/null ); do
-
-                        P_USERNAME=$( jq -r  .pingers["${I_USER}"].username             "${DATA_JSON}"  )
-                    P_REGEXP_COUNT=$( jq -r ".pingers[${I_USER}].regexp | length"       "${DATA_JSON}"  ) 
-                   for I_REGEXP in $( seq 0 $(( ${P_REGEXP_COUNT:=0} - 1 )) 2>/dev/null ); do
-
-                          P_REGEXP=$( jq -r  .pingers["${I_USER}"].regexp["${I_REGEXP}"] "${DATA_JSON}" )
-                             P_ARR+=( "${P_REGEXP};${P_USERNAME}" )
-                   done
-               done
-
-}    # ----------  end of function _load_pingers  ----------
-
 #===  END OF FUNCTIONS  ========================================================
 
 #-----------------------------------------------------------------------
@@ -194,7 +172,6 @@ shift $((OPTIND-1))
 #===  START  ===================================================================
 
 _log_echo "Started"
-_load_pingers
 
 while sleep 1; do
 
@@ -249,23 +226,10 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
-        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]]; then 
-            PPHRASE_LENGHT=$( jq '.ping_phrases | length' "${DATA_JSON}" )
-            P_VALID=false
-            for ((n=0;n<PPHRASE_LENGHT;n++)); do
-                if [[ "${R_MESSAGE}" =~ $( jq -r .ping_phrases[${n}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
-                    P_VALID=true
-                    break;
-                fi
-            done
-            if [[ "${P_VALID}" == "true" ]] ; then
-                for k in "${P_ARR[@]}"; do
-                   if [[ "${R_MESSAGE}" =~ ${k%%;*} ]]; then
+        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                                  \
+           "SELECT EXISTS(SELECT 1 FROM ping_phrases WHERE \"${R_MESSAGE}\" LIKE '%'||ping_phrases.phrase||'%');")\
+              -eq 1 ]]; then
                     MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                <<< "${R_MESSAGE}"    )
-                    break
-                fi
-                done
-            fi
         fi
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
@@ -446,25 +410,9 @@ while sleep 1; do
         #===============================================================================
            /ping)
 
-               PING=()
-               for I_ARGS in ${ARGS,,}; do
-                   for I_REGEXP in "${P_ARR[@]}"; do
-                       if [[ ${I_ARGS} =~ ${I_REGEXP%%;*} ]]; then
-                           PING+=(${I_REGEXP##*;})
-                       fi
-                   done
-               done
-
-               if [[ ! -z ${PING[*]} ]]; then
-                   USERNAMES=()
-                   for USERNAME in $( xargs -n1 <<< "${PING[@]}" | sort -u ); do
-
-                       USERNAMES+=("@${USERNAME}")
-                   done
-                   TEXT="${USERNAMES[*]}"
+               TEXT=$( sqlite3 "${DATABASE}" "SELECT username FROM pingers WHERE \"${ARGS,,}\" LIKE '%'||pingers.match||'%';" | sed 's/^/@/' | xargs )
                    _send_text
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
-               fi
                ;;
 
         #===  COMMAND  =================================================================
