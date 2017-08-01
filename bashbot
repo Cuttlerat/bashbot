@@ -15,8 +15,6 @@
     [[ "${WEATHER_TOKEN:="$2"}" ]]
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
-    readonly       LOCATIONS="./data/.locations"
-    readonly       DATA_JSON="./data/.data.json"
     readonly        DATABASE="./data/database.db"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
@@ -165,9 +163,8 @@ shift $((OPTIND-1))
 
 #===  FILES CHECKING  ==========================================================
 
-[[ ! -d    "./data"    ]] && mkdir ./data
-[[ ! -f "${LOCATIONS}" ]] && touch "${LOCATIONS}"
-[[ ! -f "${DATA_JSON}" ]] && touch "${DATA_JSON}"
+[[ ! -d    "./data"   ]] && mkdir ./data
+[[ ! -f "${DATABASE}" ]] && touch "${DATABASE}"
 
 #===  START  ===================================================================
 
@@ -269,7 +266,6 @@ while sleep 1; do
                                               FROM locations 
                                               WHERE \"${SENDER}\" 
                                               LIKE locations.username;"                               )
-                #grep -q "${SENDER}" "${LOCATIONS}" && ARGS=$( sed -n "s/${SENDER};//p" "${LOCATIONS}" )
 
                 RAW_WEATHER=$( _weather_request )
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -443,7 +439,7 @@ while sleep 1; do
         #          NAME:  /ping
         #   DESCRIPTION:  This is not for direct call. This command uses
         #                 to call a user by a regular expression stroed into 
-        #                 ${DATA_JSON} file
+        #                 ${DATABASE}
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
