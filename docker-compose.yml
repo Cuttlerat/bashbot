@@ -5,7 +5,7 @@ services:
             context: .
             dockerfile: dockerfiles/bashbot.Dockerfile
         volumes:
-          - ./data:/data
+          - ./database.db:/database.db
         env_file: builder/.tokens 
         restart: always
     builder:
