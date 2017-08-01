@@ -9,13 +9,17 @@
 #
 #===============================================================================
 
+#===  CHECKING TOKENS FILE  ====================================================
+
+[[ -f ./tokens ]] && . ./tokens
+
 #===  CONSTANTS  ===============================================================
 
     [[ "${BOT_TOKEN:="$1"}" ]]
     [[ "${WEATHER_TOKEN:="$2"}" ]]
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
-    readonly        DATABASE="/database.db"
+    readonly        DATABASE="./database.db"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
