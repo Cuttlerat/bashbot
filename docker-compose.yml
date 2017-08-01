@@ -6,8 +6,8 @@ services:
             dockerfile: dockerfiles/bashbot.Dockerfile
         volumes:
           - ./database.db:/database.db
-        env_file: builder/.tokens 
-        restart: always
+        env_file: ./tokens 
+        restart: unless-stopped
     builder:
         build:
             context: .

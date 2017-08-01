@@ -1,0 +1,8 @@
+#!/bin/bash
+touch database.db
+chmod 600 database.db
+touch tokens
+chmod 600 tokens
+echo "BOT_TOKEN=YOUR_TELEGRAM_TOKEN_HERE" >> tokens
+echo "WEATHER_TOKEN=YOUR_WEATHER_KEY_HERE" >> tokens
+rm $0
