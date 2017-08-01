@@ -193,24 +193,31 @@ while sleep 1; do
                                                           sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
+      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
 
         #-------------------------------------------------------------------------------
         # Google command parser
         #-------------------------------------------------------------------------------
-       G_LENGTH=$( jq '.google_ignore | length' "${DATA_JSON}"                                            )
-        G_VALID=true
-      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
-        for ((g=0;g<G_LENGTH;g++)); do
-            if [[ "${R_MESSAGE}" =~ $( jq -r .google_ignore[${g}] "${DATA_JSON}" | sed 's/.*/\\b&\\b/' ) ]]; then
-                G_VALID=false
-                break
+        if [[ $( sqlite3 "${DATABASE}"                                                                    \
+           "SELECT EXISTS(
+                SELECT 1 FROM google_ignore 
+                WHERE \"${MESSAGE,,}\" 
+                LIKE '%'||google_ignore.ignore||'%'
+                ) LIMIT 1;" ) -eq 0 ]] &&                                                                 \
+           [[ $( sqlite3 "${DATABASE}"                                                                    \
+           "SELECT EXISTS(
+                SELECT 1 FROM google 
+                WHERE \"${MESSAGE,,}\" 
+                LIKE '%'||google.match||'%'
+                ) LIMIT 1;" ) -eq 1 ]]; then
+                MATCH=$( sqlite3 "${DATABASE}"                                                            \
+                        "SELECT * FROM google 
+                         WHERE \"${MESSAGE,,}\" 
+                         LIKE '%'||google.match||'%';"                                                    |\
+                         awk '{printf length; printf " "; print $0}'                                      |\
+                         sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                             ) 
+                MESSAGE=$( sed -r "s#${MATCH}#/google#i"                            <<< "${MESSAGE}"      )
             fi
-        done
-        if [[ "${G_VALID}" == "true" ]]; then
-            MESSAGE=$( sed -r 's#^(окей,? гугл,? )?(ч(е|ё|то) (такое|за))\s+(.+)#/google \5#i'            \
-                                                                                        <<< "${MESSAGE}"  )
-            MESSAGE=$( sed -r 's#^(окей,? гугл,?)\s+(.+)#/google \2#i'                  <<< "${MESSAGE}"  )
-        fi
 
         #-------------------------------------------------------------------------------
         # Rick and Morty easter egg
@@ -226,10 +233,14 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Parsing pingers in message if message doesn't start with command
         #-------------------------------------------------------------------------------
-        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                                  \
-           "SELECT EXISTS(SELECT 1 FROM ping_phrases WHERE \"${R_MESSAGE}\" LIKE '%'||ping_phrases.phrase||'%');")\
+        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                          \
+                                                           "SELECT EXISTS(
+                                                                SELECT 1 FROM ping_phrases 
+                                                                WHERE \"${R_MESSAGE}\" 
+                                                                LIKE '%'||ping_phrases.phrase||'%'
+                                                                ) LIMIT 1;"                               )\
               -eq 1 ]]; then
-                    MESSAGE=$( sed -r "s/.*\b${k%%;*}\b.*/\/ping &/"                <<< "${R_MESSAGE}"    )
+                    MESSAGE=$( sed -r "s/^/\/ping &/"                <<< "${R_MESSAGE}"                   )
         fi
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
@@ -410,7 +421,12 @@ while sleep 1; do
         #===============================================================================
            /ping)
 
-               TEXT=$( sqlite3 "${DATABASE}" "SELECT username FROM pingers WHERE \"${ARGS,,}\" LIKE '%'||pingers.match||'%';" | sed 's/^/@/' | xargs )
+               TEXT=$( sqlite3 "${DATABASE}"                            \
+                   "SELECT username FROM pingers 
+                    WHERE \"${ARGS,,}\" 
+                    LIKE '%'||pingers.match||'%';"                      |\
+                    sed 's/^/@/' | xargs )
+
                    _send_text
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
                ;;
