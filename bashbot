@@ -244,6 +244,19 @@ while sleep 1; do
                     MESSAGE=$( sed -r "s/^/\/ping &/"                <<< "${R_MESSAGE//ё/е}"              )
         fi
 
+        #-------------------------------------------------------------------------------
+        # Auto answer
+        #-------------------------------------------------------------------------------
+        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                          \
+                                                           "SELECT EXISTS(
+                                                                SELECT 1 FROM answers 
+                                                                WHERE \"${R_MESSAGE}\" 
+                                                                LIKE '%'||answers.match||'%'
+                                                                ) LIMIT 1;"                               )\
+              -eq 1 ]]; then
+                    MESSAGE=$( sed -r "s/^/\/answer &/"                <<< "${R_MESSAGE//ё/е}"            )
+        fi
+
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
         COMMAND=$( awk '{print $1}'                                                 <<< "${MESSAGE}"      )
          SENDER=$( jq  -r .result[${RESULT_COUNTER}].message.from.username          <<< "${RAW_MESSAGE}"  )
@@ -457,6 +470,23 @@ while sleep 1; do
                if [[ ! -z "${TEXT}" ]]; then
                    _send_text
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
+               fi
+               ;;
+
+        #===  COMMAND  =================================================================
+        #          NAME:  /answer
+        #   DESCRIPTION:  Auto answer on a match in message
+        #    PARAMETERS:  String
+        #===============================================================================
+           /answer)
+
+               TEXT=$( sqlite3 "${DATABASE}"                            \
+                   "SELECT string FROM answers 
+                    WHERE \"${ARGS,,}\" 
+                    LIKE '%'||answers.match||'%' LIMIT 1;"              )
+               if [[ ! -z "${TEXT}" ]]; then
+                   _send_text
+                   _log_echo "Answer to \"${SENDER}\""
                fi
                ;;
 
