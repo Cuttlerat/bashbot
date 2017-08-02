@@ -16,7 +16,7 @@ This is my first telegram bot written on bash
 /md5 <String>     - Creating a md5 sum of String 
 ```
 
-## Run 
+## Starting
 
 ```
 git clone git@github.com:Cuttlerat/bashbot.git
@@ -42,7 +42,7 @@ Then just launch a bot
 ./bashbot
 ```
 
-### Run in a docker container
+### Starting in a docker container
 
 For a build and create a docker container `docker-compose` must be installed in your system
 
