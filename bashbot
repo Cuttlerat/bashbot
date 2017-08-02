@@ -193,11 +193,10 @@ while sleep 1; do
         PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
       CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
-        if [[ "${MESSAGE}" =~ ^/manage ]]; then
+        if [[ "${MESSAGE}" =~ ^/manage ]]; then # ----------  start of manage check if  ----------
             MESSAGE="${CMD_CHECK}"
         else
             MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null              <<< "${CMD_CHECK}"    )
-        fi
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
       R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
 
@@ -262,6 +261,7 @@ while sleep 1; do
                     MESSAGE=$( sed -r "s/^/\/answer &/"                <<< "${R_MESSAGE//ё/е}"            )
         fi
 
+        fi # ----------  end of manage check if  ----------
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
         COMMAND=$( awk '{print $1}'                                                 <<< "${MESSAGE}"      )
@@ -467,12 +467,21 @@ while sleep 1; do
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
+               
 
                TEXT=$( sqlite3 "${DATABASE}"                            \
                    "SELECT username FROM pingers 
                     WHERE \"${ARGS,,}\" 
                     LIKE '%'||pingers.match||'%';"                      |\
                     sed 's/^/@/' | xargs )
+               if [[ "${TEXT}" =~ EVERYONE\ GET\ IN\ HERE ]]; then
+                   TEXT=$( sqlite3 "${DATABASE}"                        \
+                       "SELECT DISTINCT username 
+                        FROM pingers 
+                        WHERE username 
+                        NOT LIKE \"EVERYONE GET IN HERE\""              |\
+                        sed 's/^/@/' | xargs )
+                    fi
                if [[ ! -z "${TEXT}" ]]; then
                    _send_text
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
