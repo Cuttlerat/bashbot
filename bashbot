@@ -493,10 +493,10 @@ while sleep 1; do
                
 
                TEXT=$( sqlite3 "${DATABASE}"                            \
-                   "SELECT username FROM pingers 
+                   "SELECT DISTINCT username 
+                    FROM pingers 
                     WHERE \"${ARGS,,}\" 
-                    LIKE '%'||pingers.match||'%'
-                    LIMIT 1;"                                           |\
+                    LIKE '%'||pingers.match||'%';"                      |\
                     sed 's/^/@/' | xargs )
                if [[ "${TEXT}" =~ EVERYONE\ GET\ IN\ HERE ]]; then
                    TEXT=$( sqlite3 "${DATABASE}"                        \
