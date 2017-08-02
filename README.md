@@ -53,7 +53,7 @@ docker-compose up --build bashbot
 Also you can take my container from a Dockerhub
 
 ```
-docker run cuttlerat/bashbot -v ./database.db:/database.db <BOT_TOKEN> <WEATHER_TOKEN>
+docker run cuttlerat/bashbot -v ./database:/database <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
 You can get a weather token here: https://www.worldweatheronline.com/ <br>
