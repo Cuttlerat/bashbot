@@ -19,7 +19,7 @@ This is my first telegram bot written on bash
 ## Starting
 
 ```
-git clone git@github.com:Cuttlerat/bashbot.git
+git clone https://github.com/Cuttlerat/bashbot.git
 cd bashbot
 ```
 
