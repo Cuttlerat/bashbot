@@ -29,11 +29,12 @@ Run a `first_start` for a database and token file creation
 ./first_start
 ```
 
-Add your tokens into `./tokens` file
+Add your telegram username and tokens into `./tokens` file
 ```
 # Tokens should be specified without any quotes
 BOT_TOKEN=<YOUR TOKEN>
 WEATHER_TOKEN=<YOUR TOKEN>
+ADMINS=( "YOUR TELEGRAM USERNAME WITHOUT @" )
 ```
 
 Then just launch a bot
