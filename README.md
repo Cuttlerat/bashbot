@@ -1,8 +1,8 @@
 # BashBot
 
-Этой мой первый бот для телеграма написанный на Bash
+This is my first telegram bot written on bash
 
-Cписок команд:
+## Commands
 
 ```
 /weather <City>   - Weather in city for now
@@ -16,43 +16,45 @@ Cписок команд:
 /md5 <String>     - Creating a md5 sum of String 
 ```
 
-## Запуск 
+## Run 
 
 ```
 git clone git@github.com:Cuttlerat/bashbot.git
 cd bashbot
 ```
 
-Запустите скрипт `first_start` для создания базы данных и файла где будут храниться ваши токены 
+Run a `first_start` for a database and token file creation 
 
 ```
 ./first_start
 ```
 
-Добавьте токены в файл `tokens`
+Add your tokens into `./tokens` file
 ```
-# Токены следует указывать без каких-либо кавычек
+# Tokens should be specified without any quotes
 BOT_TOKEN=<YOUR TOKEN>
 WEATHER_TOKEN=<YOUR TOKEN>
 ```
 
-Для того чтобы просто запустить бота 
+Then just launch a bot
 
 ```
 ./bashbot
 ```
 
-Для того чтобы собрать и запустить свой Docker контейнер, вам понадобится Docker Compose
+### Run in a docker container
+
+For a build and create a docker container `docker-compose` must be installed in your system
 
 ```
 docker-compose up --build bashbot 
 ```
 
-Также вы можете взять готовый контейнер с Dockerhub
+Also you can take my container from a Dockerhub
 
 ```
 docker run cuttlerat/bashbot -v ./database.db:/database.db <BOT_TOKEN> <WEATHER_TOKEN>
 ```
 
-Токен для погоды брать здесь: https://www.worldweatheronline.com/ <br>
-Зарегистрировать бота здесь: https://telegram.me/BotFather
+You can get a weather token here: https://www.worldweatheronline.com/ <br>
+Register your bot here: https://t.me/BotFather
