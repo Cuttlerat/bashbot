@@ -11,7 +11,7 @@
 
 #===  CHECKING TOKENS FILE  ====================================================
 
-[[ -f ./tokens ]] && . ./tokens
+[[ -f ./tokens ]] && . ./tokens 
 
 #===  CONSTANTS  ===============================================================
 
@@ -219,7 +219,7 @@ while sleep 1; do
         if [[ "${MESSAGE}" =~ ^/manage ]]; then # ----------  start of manage check if  ----------
             MESSAGE="${CMD_CHECK}"
         else
-            MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null              <<< "${CMD_CHECK}"    )
+            MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g"                                  <<< "${CMD_CHECK}"    | xargs 2>/dev/null        )
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
       R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
 
