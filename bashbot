@@ -191,9 +191,13 @@ while sleep 1; do
         # Checking that the command was sent to your bot
         #-------------------------------------------------------------------------------
         PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
-      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  |\
-                                                          sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null )
+      CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  )
         MESSAGE=$( sed -r "s/${BOTNAME}//"                                          <<< "${CMD_CHECK}"    )
+        if [[ "${MESSAGE}" =~ ^/manage ]]; then
+            MESSAGE="${CMD_CHECK}"
+        else
+            MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g" | xargs 2>/dev/null              <<< "${CMD_CHECK}"    )
+        fi
         [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
       R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
 
@@ -257,6 +261,7 @@ while sleep 1; do
               -eq 1 ]]; then
                     MESSAGE=$( sed -r "s/^/\/answer &/"                <<< "${R_MESSAGE//ё/е}"            )
         fi
+
 
            ARGS=$( awk '{$1="";print $0}'                                           <<< "${MESSAGE}"      | xargs 2>/dev/null )
         COMMAND=$( awk '{print $1}'                                                 <<< "${MESSAGE}"      )
@@ -499,8 +504,8 @@ while sleep 1; do
            /manage)
 
                if [[ ${ADMINS[*]} =~ ${SENDER} ]]; then
-                   TEXT=$( sqlite3 "${DATABASE}" "${ARGS}" )
-                   _log_echo "Manage \"${ARGS}\" by \"${SENDER}\""
+                   TEXT=$( sqlite3 "${DATABASE}" "${MESSAGE//\/manage /}" )
+                   _log_echo "Manage \"${MESSAGE//\/manage /}\" by \"${SENDER}\""
                else
                    TEXT="You are not an administrator. The incident will be reported"
                    _log_echo "Trying to manage by \"${SENDER}\""
