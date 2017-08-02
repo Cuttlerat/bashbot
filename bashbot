@@ -20,7 +20,7 @@
     readonly       BOT_TOKEN
     readonly   WEATHER_TOKEN
     readonly          ADMINS
-    readonly        DATABASE="./database.db"
+    readonly        DATABASE="./database/database.db"
     readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
@@ -166,10 +166,32 @@ do
 done
 shift $((OPTIND-1))
 
-#===  FILES CHECKING  ==========================================================
+#===  DATABASE CHECKING  =======================================================
 
-[[ ! -d    "./data"   ]] && mkdir ./data
-[[ ! -f "${DATABASE}" ]] && touch "${DATABASE}"
+if [[ ! -f "${DATABASE}" ]]; then 
+    touch "${DATABASE}"
+fi
+
+sqlite3 "${DATABASE}" "CREATE TABLE answers(
+                       match varchar(255) PRIMARY KEY,
+                       string varchar(255));"
+
+sqlite3 "${DATABASE}" "CREATE TABLE google(
+                       match varchar(255) PRIMARY KEY);"
+
+sqlite3 "${DATABASE}" "CREATE TABLE google_ignore(
+                       ignore varchar(255) PRIMARY KEY);"
+
+sqlite3 "${DATABASE}" "CREATE TABLE locations(
+                       username varchar(255) PRIMARY KEY,
+                       city varchar(255));"
+
+sqlite3 "${DATABASE}" "CREATE TABLE ping_phrases(
+                       phrase varchar(255) PRIMARY KEY);"
+
+sqlite3 "${DATABASE}" "CREATE TABLE pingers(
+                       username varchar(255),
+                       match varchar(255) PRIMARY KEY);"
 
 #===  START  ===================================================================
 
