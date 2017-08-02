@@ -170,6 +170,7 @@ shift $((OPTIND-1))
 
 if [[ ! -f "${DATABASE}" ]]; then 
     touch "${DATABASE}"
+    chmod 600 "${DATABASE}"
 fi
 {
     sqlite3 "${DATABASE}" "CREATE TABLE answers(

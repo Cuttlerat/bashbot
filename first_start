@@ -5,6 +5,7 @@ if [[ ! -f tokens ]]; then
     touch tokens
     echo "BOT_TOKEN=YOUR_TELEGRAM_TOKEN_HERE" > tokens
     echo "WEATHER_TOKEN=YOUR_WEATHER_KEY_HERE" >> tokens
+    echo "ADMINS=( \"YOUR TELEGRAM USERNAME WITHOUT @\" )"
 fi
 chmod 600 tokens
 rm $0
