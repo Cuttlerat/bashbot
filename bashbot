@@ -355,6 +355,7 @@ while sleep 1; do
            /start)
 
                TEXT=$( sed 's/^ \+//' <<<"
+                     Commands:
                      /weather <City> - Weather in city for now
                      /w <City> - Short form of /w
                      /wset <City> - Set default city for /weather
