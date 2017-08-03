@@ -341,7 +341,7 @@ while sleep 1; do
            /info)
 
                 TEXT=$( sed 's/^\s\+//' <<<\
-                     "Hello! This is my first bot on Bash.
+                     "This is my first bot on Bash.
                       You can see the code here https://github.com/Cuttlerat/bashbot
                       by @Cuttlerat" )
                 _send_text
