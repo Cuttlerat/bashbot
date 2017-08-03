@@ -562,7 +562,7 @@ while sleep 1; do
            /*)
 
                if ${PRIVATE} || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
-                   TEXT="No such command"                                                   
+                   TEXT="Unknown command"                                                   
                    _send_text                                                               
                    _log_echo "Bad command \"${CMD_CHECK}\" by @${SENDER}"
                fi
