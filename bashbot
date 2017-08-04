@@ -21,7 +21,6 @@
     readonly   WEATHER_TOKEN
     readonly          ADMINS
     readonly        DATABASE="./database/database.db"
-    readonly  DEFAULT_CITY_2="Ленинград"
     readonly         TIMEOUT="10"
     readonly             URL="https://api.telegram.org/bot${BOT_TOKEN}"
     readonly         BOTNAME="@$( curl -s "${URL}/getMe" |           \
