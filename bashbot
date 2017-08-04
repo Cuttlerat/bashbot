@@ -540,14 +540,16 @@ while sleep 1; do
                       TEXT=$( sqlite3 "${DATABASE}"                \
                              "SELECT DISTINCT username
                               FROM pingers
-                              WHERE \"${TEXT}\"
+                              WHERE \"${TEXT} ${SENDER}\"
                               NOT LIKE '%'||username||'%'" )
                    else
                    TEXT=$( sqlite3 "${DATABASE}"                        \
                        "SELECT DISTINCT username 
                         FROM pingers 
                         WHERE username 
-                        NOT LIKE \"EVERYONE GET IN HERE\""              )
+                        NOT LIKE \"EVERYONE GET IN HERE\"
+                        AND username
+                        NOT LIKE \"${SENDER}\""                             )
                    fi
                fi
                if [[ ! -z "${TEXT}" ]]; then
