@@ -81,15 +81,14 @@ function _weather_request {
 }    # ----------  end of function _weather_request  ----------
 
 #===  FUNCTION  ================================================================
-#          NAME:  _weather_request
-#   DESCRIPTION:  Sending request to https://worldweatheronline.com/ api
+#          NAME:  _get_default_city
+#   DESCRIPTION:  Get the default city from the database
 #===============================================================================
 function _get_default_city {
 
     sqlite3 "${DATABASE}" "SELECT city 
                            FROM locations
-                           WHERE username=\"default_city\"
-                           LIMIT 1"
+                           WHERE username=\"default_city\""
 
 }    # ----------  end of function _weather_request  ----------
 
