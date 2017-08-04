@@ -530,25 +530,26 @@ while sleep 1; do
                     WHERE \"${ARGS,,}\" 
                     LIKE '%'||pingers.match||'%';"                      )
                if [[ "${TEXT}" =~ EVERYONE\ GET\ IN\ HERE ]]; then
+                   if [[ $( sqlite3 "${DATABASE}"                  \
+                               "SELECT EXISTS(
+                                    SELECT 1 FROM ping_exclude 
+                                    WHERE \"${ARGS,,}\" 
+                                    LIKE '%'||ping_exclude.match||'%'
+                                    ) LIMIT 1;"                    )\
+                                    -eq 1 ]]; then
+                      TEXT=$( sqlite3 "${DATABASE}"                \
+                             "SELECT DISTINCT username
+                              FROM pingers
+                              WHERE \"${TEXT}\"
+                              NOT LIKE '%'||username||'%'" )
+                   else
                    TEXT=$( sqlite3 "${DATABASE}"                        \
                        "SELECT DISTINCT username 
                         FROM pingers 
                         WHERE username 
                         NOT LIKE \"EVERYONE GET IN HERE\""              )
-                        if [[ $( sqlite3 "${DATABASE}"                  \
-                                    "SELECT EXISTS(
-                                         SELECT 1 FROM ping_exclude 
-                                         WHERE \"${ARGS,,}\" 
-                                         LIKE '%'||ping_exclude.match||'%'
-                                         ) LIMIT 1;"                    )\
-                                         -eq 1 ]]; then
-                           TEXT=$( sqlite3 "${DATABASE}"                \
-                                  "SELECT DISTINCT username
-                                   FROM pingers
-                                   WHERE \"${ARGS,,}\"
-                                   NOT LIKE '%'||pingers.match||'%'" )
-                        fi
-                    fi
+                   fi
+               fi
                if [[ ! -z "${TEXT}" ]]; then
                    TEXT=$( sed -r 's/\b(.+)\b/@\1/g' <<< "${TEXT}" | xargs )
                    _send_text
