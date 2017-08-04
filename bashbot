@@ -55,6 +55,7 @@ function _usage ()
 #===============================================================================
 function _send_text {
 
+    TEXT=$( sed 's/^\s\+//g' <<< "${TEXT}" )
     curl -s "${URL}/sendMessage"                                              \
             --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
@@ -71,12 +72,25 @@ function _send_text {
 function _weather_request {
 
     curl -s "https://api.worldweatheronline.com/premium/v1/weather.ashx"      \
-                  --data-urlencode "q=${ARGS:="${DEFAULT_CITY_2}"}"           \
-                            --data "key=${WEATHER_TOKEN}"                       \
+               --data-urlencode "q=${ARGS:="$(_get_default_city)"}"           \
+                            --data "key=${WEATHER_TOKEN}"                     \
                             --data "format=json"                              \
                             --data "date=today"                               \
                             --data "fx24=yes"                                 \
                             --data "lang=ru"                                
+
+}    # ----------  end of function _weather_request  ----------
+
+#===  FUNCTION  ================================================================
+#          NAME:  _weather_request
+#   DESCRIPTION:  Sending request to https://worldweatheronline.com/ api
+#===============================================================================
+function _get_default_city {
+
+    sqlite3 "${DATABASE}" "SELECT city 
+                           FROM locations
+                           WHERE username=\"default_city\"
+                           LIMIT 1"
 
 }    # ----------  end of function _weather_request  ----------
 
@@ -222,69 +236,72 @@ while sleep 1; do
         fi
         if [[ ! "${MESSAGE}" =~ ^/manage ]]; then # ----------  start of manage check if  ----------
             MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g"                                  <<< "${MESSAGE}"      | xargs 2>/dev/null        )
-        [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
-      R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                                <<< "${MESSAGE,,}"    )
+            [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
+          R_MESSAGE=$( sed -r 's/(.)\1*/\1/g;s/[.,]*//g'                            <<< "${MESSAGE,,}"    )
 
-        #-------------------------------------------------------------------------------
-        # Google command parser
-        #-------------------------------------------------------------------------------
-        if [[ $( sqlite3 "${DATABASE}"                                                                    \
-           "SELECT EXISTS(
-                SELECT 1 FROM google_ignore 
-                WHERE \"${MESSAGE,,}\" 
-                LIKE '%'||google_ignore.ignore||'%'
-                ) LIMIT 1;" ) -eq 0 ]] &&                                                                 \
-           [[ $( sqlite3 "${DATABASE}"                                                                    \
-           "SELECT EXISTS(
-                SELECT 1 FROM google 
-                WHERE \"${MESSAGE,,}\" 
-                LIKE '%'||google.match||'%'
-                ) LIMIT 1;" ) -eq 1 ]]; then
-                MATCH=$( sqlite3 "${DATABASE}"                                                            \
-                        "SELECT * FROM google 
-                         WHERE \"${MESSAGE,,}\" 
-                         LIKE '%'||google.match||'%';"                                                    |\
-                         awk '{printf length; printf " "; print $0}'                                      |\
-                         sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                             ) 
-                MESSAGE=$( sed -r "s#${MATCH}#/google#i"                            <<< "${MESSAGE}"      )
+          #-------------------------------------------------------------------------------
+          # Google command parser
+          #-------------------------------------------------------------------------------
+            if [[ $( sqlite3 "${DATABASE}"                                                               \
+               "SELECT EXISTS(
+                    SELECT 1 FROM google_ignore 
+                    WHERE \"${MESSAGE,,}\" 
+                    LIKE '%'||google_ignore.ignore||'%'
+                    ) LIMIT 1;" ) -eq 0 ]]                                                               \
+               &&                                                                                        \
+               [[ $( sqlite3 "${DATABASE}"                                                               \
+               "SELECT EXISTS(
+                    SELECT 1 FROM google 
+                    WHERE \"${MESSAGE,,}\" 
+                    LIKE '%'||google.match||'%'
+                    ) LIMIT 1;" ) -eq 1 ]]; then
+
+                    MATCH=$( sqlite3 "${DATABASE}"                                                       \
+                            "SELECT * FROM google 
+                             WHERE \"${MESSAGE,,}\" 
+                             LIKE '%'||google.match||'%';"                                               |\
+                             awk '{printf length; printf " "; print $0}'                                 |\
+                             sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                        ) 
+
+                    MESSAGE=$( sed -r "s#${MATCH}#/google#i"                       <<< "${MESSAGE}"      )
+                fi
+
+          #-------------------------------------------------------------------------------
+          # Rick and Morty easter egg
+          #-------------------------------------------------------------------------------
+            MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"                     <<< "${MESSAGE}"      )
+
+          #-------------------------------------------------------------------------------
+          # Weather token check
+          #-------------------------------------------------------------------------------
+            RE="^/w\\b|^/weather\\b"
+            [[ ${MESSAGE} =~ ${RE} ]] && [[ -z "${WEATHER_TOKEN}" ]] && MESSAGE="/none${MESSAGE}"
+
+          #-------------------------------------------------------------------------------
+          # Parsing pingers in message if message doesn't start with command
+          #-------------------------------------------------------------------------------
+            if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                      \
+                                                               "SELECT EXISTS(
+                                                                    SELECT 1 FROM ping_phrases 
+                                                                    WHERE \"${R_MESSAGE}\" 
+                                                                    LIKE '%'||ping_phrases.phrase||'%'
+                                                                    ) LIMIT 1;"                           )\
+                  -eq 1 ]]; then
+                        MESSAGE=$( sed -r "s/^/\/ping &/"                <<< "${R_MESSAGE//ё/е}"          )
             fi
 
-        #-------------------------------------------------------------------------------
-        # Rick and Morty easter egg
-        #-------------------------------------------------------------------------------
-        MESSAGE=$( sed -r "s/^SHOW ME WHAT YOU GOT/\/show/"                         <<< "${MESSAGE}"      )
-
-        #-------------------------------------------------------------------------------
-        # Weather token check
-        #-------------------------------------------------------------------------------
-        RE="^/w\\b|^/weather\\b"
-        [[ ${MESSAGE} =~ ${RE} ]] && [[ -z "${WEATHER_TOKEN}" ]] && MESSAGE="/none${MESSAGE}"
-
-        #-------------------------------------------------------------------------------
-        # Parsing pingers in message if message doesn't start with command
-        #-------------------------------------------------------------------------------
-        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                          \
-                                                           "SELECT EXISTS(
-                                                                SELECT 1 FROM ping_phrases 
-                                                                WHERE \"${R_MESSAGE}\" 
-                                                                LIKE '%'||ping_phrases.phrase||'%'
-                                                                ) LIMIT 1;"                               )\
-              -eq 1 ]]; then
-                    MESSAGE=$( sed -r "s/^/\/ping &/"                <<< "${R_MESSAGE//ё/е}"              )
-        fi
-
-        #-------------------------------------------------------------------------------
-        # Auto answer
-        #-------------------------------------------------------------------------------
-        if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                          \
-                                                           "SELECT EXISTS(
-                                                                SELECT 1 FROM answers 
-                                                                WHERE \"${R_MESSAGE}\" 
-                                                                LIKE '%'||answers.match||'%'
-                                                                ) LIMIT 1;"                               )\
-              -eq 1 ]]; then
-                    MESSAGE=$( sed -r "s/^/\/answer &/"                <<< "${R_MESSAGE//ё/е}"            )
-        fi
+          #-------------------------------------------------------------------------------
+          # Auto answer
+          #-------------------------------------------------------------------------------
+            if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                      \
+                                                               "SELECT EXISTS(
+                                                                    SELECT 1 FROM answers 
+                                                                    WHERE \"${R_MESSAGE}\" 
+                                                                    LIKE '%'||answers.match||'%'
+                                                                    ) LIMIT 1;"                           )\
+                  -eq 1 ]]; then
+                        MESSAGE=$( sed -r "s/^/\/answer &/"              <<< "${R_MESSAGE//ё/е}"          )
+            fi
 
         fi # ----------  end of manage check if  ----------
 
@@ -324,7 +341,17 @@ while sleep 1; do
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
-                    TEXT="Wrong location!"
+                    if [[ ! -z ${ARGS} ]]; then 
+                        TEXT="Wrong location!"
+                    elif [[ "${ADMINS[*]}" =~ ${SENDER} ]]; then
+                        TEXT="You didn't set the default city
+                              You can add default city by this command:
+                              /manage insert into locations(username,city) values(\"default_city\",\"YOUR CITY HERE\")"
+                            
+                    else
+                        TEXT="Administrator didn't set the default city
+                              Try /w City"
+                    fi
                 else
                     TEXT=$( echo -e "[${UPDATE_TIME}]: ${TEMP} ${COMMENT}\n${CITY}" )
                 fi
