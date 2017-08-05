@@ -384,15 +384,17 @@ while sleep 1; do
 
                TEXT=$( sed 's/^ \+//' <<<"
                      Commands:
-                     /weather <City> - Weather in city for now
-                     /w <City> - Short form of /w
-                     /wset <City> - Set default city for /weather
-                     /ibash <Number>- Random quote from ibash.org.ru
-                     /loglist <Number>- Random quote from loglist.net
-                     /roll - Rolling a random number from 0 to 99
-                     /google <String> - Sending a link to google.com/String 
-                     /md5 <String> - Creating a md5 sum of String 
-                     /info - Information about this bot" )
+                     /weather <City>     - Weather in a city for now
+                     /w <City>           - Short form of /w
+                     /info               - Information about this bot  
+                     /wset <City>        - Set default city for /weather
+                     /ibash <Number>     - Random quote from ibash.org.ru
+                     /loglist <Number>   - Random quote from loglist.net
+                     /roll               - Rolling a random number from 0 to 99
+                     /google <String>    - Send a link to google.com/String 
+                     /md5 <String>       - Creating a md5 sum of String 
+                     /manage <SQL query> - Manage your database (Only for admins)
+                     " )
                     
                _send_text
                ;;
