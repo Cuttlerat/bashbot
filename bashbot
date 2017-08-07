@@ -94,7 +94,7 @@ function _get_default_city {
 
 #===  FUNCTION  ================================================================
 #          NAME:  _ibash
-#   DESCRIPTION:  Getting randow quote from http://ibash.org.ru
+#   DESCRIPTION:  Getting random quote from http://ibash.org.ru
 #===============================================================================
 function _ibash {
 
@@ -108,7 +108,7 @@ function _ibash {
 
 #===  FUNCTION  ================================================================
 #          NAME:  _loglist
-#   DESCRIPTION:  Getting randow quote from http://loglist.net
+#   DESCRIPTION:  Getting random quote from http://loglist.net
 #===============================================================================
 function _loglist {
 
