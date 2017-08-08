@@ -1,6 +1,6 @@
 # BashBot
 
-This is my first telegram bot written on bash
+This is my first telegram bot written in bash
 
 ## Commands
 
