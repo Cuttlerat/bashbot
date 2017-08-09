@@ -54,7 +54,7 @@ function _usage ()
 #===============================================================================
 function _send_text {
 
-    TEXT=$( sed 's/^\s\+//g' <<< "${TEXT}" )
+    local TEXT=$( sed 's/^\s\+//g' <<< "${1}" )
     curl -s "${URL}/sendMessage"                                              \
             --max-time "${TIMEOUT}"                                           \
             --output /dev/null                                                \
@@ -102,7 +102,7 @@ function _ibash {
                         w3m -dump -cols 300 -T 'text/html'                   |\
                         awk '/#[0-9]+/{f=1}/━+/{f=0}f'                       |\
                         sed '1s/ +.*//'                                      )"
-               _send_text 1>&2
+               _send_text "${TEXT}" 1>&2
 
 }    # ----------  end of function _ibash  ----------
 
@@ -115,7 +115,7 @@ function _loglist {
                TEXT="$( curl -sL https://loglist.net/api/quote/random        |\
                         jq -r .id,.content                                   |\
                         sed '1s/^/#/' )"                              
-               _send_text 1>&2
+               _send_text "${TEXT}" 1>&2
 
 }    # ----------  end of function _loglist  ----------
 
@@ -370,7 +370,7 @@ while sleep 1; do
                      Evening: ${EVENING_C} ${EVENING_CMT} ")
                 fi
 
-                _send_text
+                _send_text "${TEXT}"
                 _log_echo "Weather \"${CITY}\" to @${SENDER}"                               
                 ;;
 
@@ -385,7 +385,7 @@ while sleep 1; do
                      "This is my first bot on Bash.
                       You can see the code here https://github.com/Cuttlerat/bashbot
                       by @Cuttlerat" )
-                _send_text
+                _send_text "${TEXT}"
                 ;;
 
         #===  COMMAND  =================================================================
@@ -409,7 +409,7 @@ while sleep 1; do
                      /manage <SQL query> - Manage your database (Only for admins)
                      " )
                     
-               _send_text
+               _send_text "${TEXT}"
                ;;
 
         #===  COMMAND  =================================================================
@@ -470,7 +470,7 @@ while sleep 1; do
                     TEXT="Added @${SENDER}: ${ARGS}"
                     fi
                 fi
-                _send_text
+                _send_text "${TEXT}"
                 _log_echo "$TEXT"
                 ;;
 
@@ -482,7 +482,7 @@ while sleep 1; do
            /md5)
 
                 TEXT=$( md5sum <<< "${ARGS}" | awk '{print $1}' )
-                _send_text
+                _send_text "${TEXT}"
                 _log_echo "MD5 to @${SENDER}"
                 ;;
 
@@ -496,7 +496,7 @@ while sleep 1; do
                ARGS=${ARGS//\?/}
                PREVIEW=0
                TEXT="https://www.google.ru/search?q=${ARGS// /+}"
-               _send_text
+               _send_text "${TEXT}"
                _log_echo "Google: \"${ARGS}\" by @${SENDER}"
                PREVIEW=1
                ;;
@@ -510,7 +510,7 @@ while sleep 1; do
 
                PREVIEW=0
                TEXT="https://www.youtube.com/watch?v=I1188GO4p1E"
-               _send_text
+               _send_text "${TEXT}"
                _log_echo "Shchwifty by @${SENDER}"
                PREVIEW=1
                ;;
@@ -524,7 +524,7 @@ while sleep 1; do
            
                ARGS=$( sed 's/.*[^0-9].*/100/' <<< "${ARGS:-100}" )
                TEXT=$(( RANDOM % ARGS ))
-               _send_text
+               _send_text "${TEXT}"
                _log_echo "Rolled \"${TEXT}\" by @${SENDER}"
                ;;
 
@@ -568,7 +568,7 @@ while sleep 1; do
                fi
                if [[ ! -z "${TEXT}" ]]; then
                    TEXT=$( sed -r 's/\b(.+)\b/@\1/g' <<< "${TEXT}" | xargs )
-                   _send_text
+                   _send_text "${TEXT}"
                    _log_echo "Ping to \"${TEXT}\" by @${SENDER}"
                fi
                ;;
@@ -585,7 +585,7 @@ while sleep 1; do
                     WHERE \"${ARGS,,}\" 
                     LIKE '%'||answers.match||'%' LIMIT 1;"              )
                if [[ ! -z "${TEXT}" ]]; then
-                   _send_text
+                   _send_text "${TEXT}"
                    _log_echo "Answer to \"${SENDER}\""
                fi
                ;;
@@ -609,7 +609,7 @@ while sleep 1; do
                    TEXT="You are not an administrator. The incident will be reported"
                    _log_echo "Trying to manage by \"${SENDER}\""
                fi
-                   _send_text
+                   _send_text "${TEXT}"
                ;;
 
         #===  COMMAND  =================================================================
@@ -621,7 +621,7 @@ while sleep 1; do
 
                if ${PRIVATE} || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
                    TEXT="Unknown command"                                                   
-                   _send_text                                                               
+                   _send_text "${TEXT}"                                                               
                    _log_echo "Bad command \"${CMD_CHECK}\" by @${SENDER}"
                fi
                ;;
