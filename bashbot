@@ -164,7 +164,7 @@ function _offset {
 #  Handle command line arguments
 #-----------------------------------------------------------------------
 
-[[ -z ${BOT_TOKEN} ]] && _usage && exit 1;
+if [[ -z ${BOT_TOKEN} ]]; then _usage; exit 1; fi
 
 while getopts "h" opt
 do
@@ -180,7 +180,7 @@ shift $((OPTIND-1))
 
 #===  DATABASE CHECKING  =======================================================
 
-if [[ ! -f "${DATABASE}" ]]; then 
+if [[ ! -w "${DATABASE}" ]]; then 
     touch "${DATABASE}"
     chmod 600 "${DATABASE}"
 fi
@@ -208,7 +208,9 @@ fi
     sqlite3 "${DATABASE}" "CREATE TABLE pingers(
                            username varchar(255),
                            match varchar(255) PRIMARY KEY);"
+
 } 2>/dev/null
+
 #===  START  ===================================================================
 
 _log_echo "Started"
@@ -228,7 +230,7 @@ while sleep 1; do
         #-------------------------------------------------------------------------------
         # Checking that the command was sent to your bot
         #-------------------------------------------------------------------------------
-        PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed -r "s/private/true/" )
+        PRIVATE=$( jq  -r .result[${RESULT_COUNTER}].message.chat.type              <<< "${RAW_MESSAGE}"  | sed 's/private/true/' )
       CMD_CHECK=$( jq  -r .result[${RESULT_COUNTER}].message.text                   <<< "${RAW_MESSAGE}"  )
         if [[ "${CMD_CHECK}" =~ ${BOTNAME/$/\\b} ]]; then
             MESSAGE=$( sed -r "s/${BOTNAME}//"                                      <<< "${CMD_CHECK}"    )
@@ -236,8 +238,7 @@ while sleep 1; do
             MESSAGE="${CMD_CHECK}"
         fi
         if [[ ! "${MESSAGE}" =~ ^/manage ]]; then # ----------  start of manage check if  ----------
-            MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g"                                  <<< "${MESSAGE}"      | xargs 2>/dev/null        )
-            [[ ! "${PRIVATE}" == "true" ]] && PRIVATE=false
+            MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g"                                  <<< "${MESSAGE}"      | xargs 2>/dev/null     )
           R_MESSAGE=$( sed 's/е/ё/g'                                                <<< "${MESSAGE,,}"    )
 
           #-------------------------------------------------------------------------------
