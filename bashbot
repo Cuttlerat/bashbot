@@ -148,7 +148,7 @@ function _log_echo {
 
 #===  FUNCTION  ================================================================
 #          NAME:  _offset
-#   DESCRIPTION:  Making offset for processed messages
+#   DESCRIPTION:  Offset messages
 #===============================================================================
 function _offset {
 
