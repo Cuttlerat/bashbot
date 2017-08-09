@@ -79,7 +79,7 @@ You will need to add a note in your database like this:
 /manage INSERT INTO google(match) VALUES("what is")
 ```
 
-All matches must be in a low register! It's important (I will do something with it later)
+All matches must be in a low case! It's important (I will do something with it later)
 
 If you want to ignore some words to trigger this function
 
