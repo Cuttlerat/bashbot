@@ -322,6 +322,10 @@ while sleep 1; do
         #===============================================================================
            /w|/weather)
 
+               WEATHER_API_CRUTCH=false
+               CITY=""
+
+               while [ "${CITY}" == "" ]; do
                 [[ -z ${ARGS} ]] && [[ $(sqlite3 "${DATABASE}"                                        \
                                          "SELECT EXISTS(
                                               SELECT 1 FROM locations
@@ -335,9 +339,15 @@ while sleep 1; do
                                               LIKE locations.username;"                               )
 
                 RAW_WEATHER=$( _weather_request )
+                       CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
+
+                   [[ "${CITY}" == "" ]] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break 
+                   [[ "${CITY}" == "" ]] && WEATHER_API_CRUTCH=true
+
+               done
+
                        TEMP=$( jq -r .data.current_condition[0].temp_C           <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
-                       CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
                                xargs -i date -d 'TZ="UTC" {}' +"%H:%M" 2>/dev/null )
                   MORNING_C=$( jq -r .data.weather[0].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -346,6 +356,8 @@ while sleep 1; do
                 MORNING_CMT=$( jq -r .data.weather[0].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
                    NOON_CMT=$( jq -r .data.weather[0].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 EVENING_CMT=$( jq -r .data.weather[0].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
+
+
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
