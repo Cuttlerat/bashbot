@@ -325,7 +325,7 @@ while sleep 1; do
                WEATHER_API_CRUTCH=false
                CITY=""
 
-               while [ "${CITY}" == "" ]; do
+               while [ "${CITY}" == "" -o "${CITY}" == "null" ]; do
                 [[ -z ${ARGS} ]] && [[ $(sqlite3 "${DATABASE}"                                        \
                                          "SELECT EXISTS(
                                               SELECT 1 FROM locations
@@ -341,8 +341,8 @@ while sleep 1; do
                 RAW_WEATHER=$( _weather_request )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
 
-                   [[ "${CITY}" == "" ]] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break 
-                   [[ "${CITY}" == "" ]] && WEATHER_API_CRUTCH=true
+                   [ "${CITY}" == ""  -o "${CITY}" == "null" -a  "${WEATHER_API_CRUTCH}" == "true" ] && break 
+                   [ "${CITY}" == ""  -o "${CITY}" == "null" ] && WEATHER_API_CRUTCH=true
 
                done
 
