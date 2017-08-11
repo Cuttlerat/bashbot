@@ -631,7 +631,7 @@ while sleep 1; do
         #===============================================================================
            /*)
 
-               if ${PRIVATE} || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
+               if [[ ${PRIVATE} == "true" ]] || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
                    TEXT="Unknown command"                                                   
                    _send_text "${TEXT}"                                                               
                    _log_echo "Bad command \"${CMD_CHECK}\" by @${SENDER}"
