@@ -61,7 +61,7 @@ function _send_text {
             --data-urlencode "text=${TEXT}"                                   \
                       --data "chat_id=${CHAT_ID}"                             \
                       --data "disable_web_page_preview=${PREVIEW}"            \
-                      --data "parse_mode=markdown"                     
+                      --data "parse_mode=${PARSE_MODE}"                     
 
 }    # ----------  end of function _send_text  ----------
 
@@ -218,6 +218,7 @@ _log_echo "Started"
 
 while sleep 1; do
 
+    PARSE_MODE="none"
     RAW_MESSAGE=$( curl -s "${URL}/getUpdates" )
       MSG_COUNT=$( jq '.result | length' <<< "${RAW_MESSAGE}" )
 
@@ -325,6 +326,7 @@ while sleep 1; do
 
                WEATHER_API_CRUTCH=false
                CITY=""
+               PARSE_MODE="markdown"
 
                while [ "${CITY}" == "" -o "${CITY}" == "null" ]; do
                 [[ -z ${ARGS} ]] && [[ $(sqlite3 "${DATABASE}"                                        \
