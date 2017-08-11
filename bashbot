@@ -239,7 +239,7 @@ while sleep 1; do
         fi
         if [[ ! "${MESSAGE}" =~ ^/manage ]]; then # ----------  start of manage check if  ----------
             MESSAGE=$( sed "s/\"/\\\"/g;s/'/\\'/g"                                  <<< "${MESSAGE}"      | xargs 2>/dev/null     )
-          R_MESSAGE=$( sed 's/е/ё/g'                                                <<< "${MESSAGE,,}"    )
+          R_MESSAGE=$( sed 's/ё/е/g'                                                <<< "${MESSAGE,,}"    )
 
           #-------------------------------------------------------------------------------
           # Google command parser
@@ -297,12 +297,12 @@ while sleep 1; do
           #-------------------------------------------------------------------------------
             if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                      \
                                                                "SELECT EXISTS(
-                                                                    SELECT 1 FROM answers 
+                                                                    SELECT 1 FROM answers
                                                                     WHERE \"${R_MESSAGE}\" 
                                                                     LIKE '%'||answers.match||'%'
-                                                                    ) LIMIT 1;"                           )\
+                                                                    ) LIMIT 1"                            )\
                   -eq 1 ]]; then
-                        MESSAGE=$( sed -r "s/^/\/answer &/"              <<< "${R_MESSAGE//ё/е}"          )
+                        MESSAGE=$( sed -r "s/^/\/answer &/"              <<< "${R_MESSAGE}"               )
             fi
 
         fi # ----------  end of manage check if  ----------
