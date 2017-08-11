@@ -341,8 +341,8 @@ while sleep 1; do
                 RAW_WEATHER=$( _weather_request )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
 
-                   [ "${city}" == "" -o "${city}" == "null" ] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break 
-                   [ "${city}" == "" -o "${city}" == "null" ] && WEATHER_API_CRUTCH=true
+                   [ "${CITY}" == ""  -o "${CITY}" == "null" -a  "${WEATHER_API_CRUTCH}" == "true" ] && break 
+                   [ "${CITY}" == ""  -o "${CITY}" == "null" ] && WEATHER_API_CRUTCH=true
 
                done
 
