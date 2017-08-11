@@ -60,7 +60,8 @@ function _send_text {
             --output /dev/null                                                \
             --data-urlencode "text=${TEXT}"                                   \
                       --data "chat_id=${CHAT_ID}"                             \
-                      --data "disable_web_page_preview=${PREVIEW}"                     
+                      --data "disable_web_page_preview=${PREVIEW}"            \
+                      --data "parse_mode=markdown"                     
 
 }    # ----------  end of function _send_text  ----------
 
@@ -74,7 +75,7 @@ function _weather_request {
                --data-urlencode "q=${ARGS:="$(_get_default_city)"}"           \
                             --data "key=${WEATHER_TOKEN}"                     \
                             --data "format=json"                              \
-                            --data "date=today"                               \
+                            --data "num_of_days=2"                            \
                             --data "fx24=yes"                                 \
                             --data "lang=ru"                                
 
@@ -356,6 +357,12 @@ while sleep 1; do
                 MORNING_CMT=$( jq -r .data.weather[0].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
                    NOON_CMT=$( jq -r .data.weather[0].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 EVENING_CMT=$( jq -r .data.weather[0].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
+                T_MORNING_C=$( jq -r .data.weather[1].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
+                   T_NOON_C=$( jq -r .data.weather[1].hourly[5].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
+                T_EVENING_C=$( jq -r .data.weather[1].hourly[8].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
+              T_MORNING_CMT=$( jq -r .data.weather[1].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
+                 T_NOON_CMT=$( jq -r .data.weather[1].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
+              T_EVENING_CMT=$( jq -r .data.weather[1].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
 
 
 
@@ -374,12 +381,20 @@ while sleep 1; do
                     fi
                 else
                     TEXT=$( echo -e \
-                    "[${UPDATE_TIME}]: ${TEMP} ${COMMENT}
+                    "*Now:*
+                     *\[${UPDATE_TIME}]:* ${TEMP} ${COMMENT}
                      ${CITY}
 
-                     Morning: ${MORNING_C} ${MORNING_CMT}
-                     Noon: ${NOON_C} ${NOON_CMT}
-                     Evening: ${EVENING_C} ${EVENING_CMT} ")
+                     *Today:*
+                     *Morning:* ${MORNING_C} ${MORNING_CMT}
+                     *Noon:* ${NOON_C} ${NOON_CMT}
+                     *Evening:* ${EVENING_C} ${EVENING_CMT} 
+
+                     *Tommorow:* 
+                     *Morning:* ${T_MORNING_C} ${T_MORNING_CMT}
+                     *Noon:* ${T_NOON_C} ${T_NOON_CMT}
+                     *Evening:* ${T_EVENING_C} ${T_EVENING_CMT} 
+                     ")
                 fi
 
                 _send_text "${TEXT}"
