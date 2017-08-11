@@ -382,7 +382,7 @@ while sleep 1; do
                 else
                     TEXT=$( echo -e \
                     "*Now:*
-                     *\[${UPDATE_TIME}]:* ${TEMP} ${COMMENT}
+                     *[${UPDATE_TIME}]:* ${TEMP} ${COMMENT}
                      ${CITY}
 
                      *Today:*
