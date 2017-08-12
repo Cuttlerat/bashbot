@@ -5,7 +5,7 @@ This is my first telegram bot written in bash
 ## Commands
 
 ```
-/weather <City>     - Weather in a city for now
+/weather <City>     - Weather in a city for now, today and tommorow
 /w <City>           - Short form of /w
 /info               - Information about this bot  
 /wset <City>        - Set default city for /weather
