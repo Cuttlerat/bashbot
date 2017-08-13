@@ -16,6 +16,7 @@ install:
   - docker version
   - sudo pip install docker-compose
   - docker-compose version
+  - ./first_start
 
 script:
   - docker-compose up --build -d
