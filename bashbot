@@ -143,7 +143,7 @@ function _qcycle {
 #===============================================================================
 function _log_echo {
 
-               date +"[%H:%M]: $1" 1>&2
+               date +"[%d/%b/%Y:%H:%M:%S %z]: $1" 1>&2
 
 }    # ----------  end of function _log_echo  ----------
 
@@ -319,7 +319,7 @@ while sleep 1; do
 
         #===  COMMAND  =================================================================
         #          NAME:  /weather or /w
-        #   DESCRIPTION:  Weather in the city for now
+        #   DESCRIPTION:  Weather in the city for now, today and tommorow
         #    PARAMETERS:  City
         #===============================================================================
            /w|/weather)
@@ -344,8 +344,8 @@ while sleep 1; do
                 RAW_WEATHER=$( _weather_request )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
 
-                   [ "${CITY}" == ""  -o "${CITY}" == "null" -a  "${WEATHER_API_CRUTCH}" == "true" ] && break 
-                   [ "${CITY}" == ""  -o "${CITY}" == "null" ] && WEATHER_API_CRUTCH=true
+                   [ "${CITY}" == "" -o "${CITY}" == "null" ] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break 
+                   [ "${CITY}" == "" -o "${CITY}" == "null" ] && WEATHER_API_CRUTCH=true
 
                done
 
@@ -353,12 +353,14 @@ while sleep 1; do
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
                                xargs -i date -d 'TZ="UTC" {}' +"%H:%M" 2>/dev/null )
+
                   MORNING_C=$( jq -r .data.weather[0].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                      NOON_C=$( jq -r .data.weather[0].hourly[5].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                   EVENING_C=$( jq -r .data.weather[0].hourly[8].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                 MORNING_CMT=$( jq -r .data.weather[0].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
                    NOON_CMT=$( jq -r .data.weather[0].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 EVENING_CMT=$( jq -r .data.weather[0].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
+
                 T_MORNING_C=$( jq -r .data.weather[1].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                    T_NOON_C=$( jq -r .data.weather[1].hourly[5].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                 T_EVENING_C=$( jq -r .data.weather[1].hourly[8].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -426,7 +428,7 @@ while sleep 1; do
 
                TEXT=$( sed 's/^ \+//' <<<"
                      Commands:
-                     /weather <City>     - Weather in a city for now
+                     /weather <City>     - Weather in a city for now, today and tommorow
                      /w <City>           - Short form of /w
                      /info               - Information about this bot  
                      /wset <City>        - Set default city for /weather
