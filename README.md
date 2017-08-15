@@ -81,7 +81,7 @@ You will need to add a note in your database like this:
 
 All matches must be in a low case! It's important (I will do something with it later)
 
-If you want to ignore some words to trigger this function
+If you don't want any word to trigger this function
 
 ```
 /manage INSERT INTO google_ignore(ignore) VALUES("Jenkins")
