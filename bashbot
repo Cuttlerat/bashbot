@@ -267,7 +267,7 @@ while sleep 1; do
                              awk '{printf length; printf " "; print $0}'                                 |\
                              sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                        ) 
 
-                    MESSAGE=$( sed -r "s#${MATCH}#/google#i"                       <<< "${MESSAGE}"      )
+                    MESSAGE=$( sed -r "s#${MATCH}(\s*\S+)#/google\1#i"             <<< "${MESSAGE}"      )
                 fi
 
           #-------------------------------------------------------------------------------
@@ -611,14 +611,16 @@ while sleep 1; do
         #===============================================================================
            /answer)
 
-               TEXT=$( sqlite3 "${DATABASE}"                            \
-                   "SELECT string FROM answers 
-                    WHERE \"${ARGS,,}\" 
-                    LIKE '%'||answers.match||'%' LIMIT 1;"              )
-               if [[ ! -z "${TEXT}" ]]; then
-                   _send_text "${TEXT}"
-                   _log_echo "Answer to \"${SENDER}\""
-               fi
+              
+               while read -r TEXT; do                 
+                   if [[ ! -z "${TEXT}" ]]; then
+                       _send_text "${TEXT}"
+                       _log_echo "Answer to \"${SENDER}\""
+                   fi
+               done < <( sqlite3 "${DATABASE}"                   \
+                           "SELECT string FROM answers 
+                            WHERE \"${ARGS,,}\" 
+                            LIKE '%'||answers.match||'%';"       )
                ;;
 
         #===  COMMAND  =================================================================

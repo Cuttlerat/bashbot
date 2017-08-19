@@ -1,5 +1,6 @@
 version: "3"
 services:
+
     bashbot:
         build: 
             context: .
@@ -8,6 +9,7 @@ services:
           - ./database:/database
         env_file: ./tokens 
         restart: unless-stopped
+
     builder:
         build:
             context: .
@@ -15,3 +17,4 @@ services:
         volumes:
           - .:/bashbot
           - /var/run/docker.sock:/var/run/docker.sock
+        restart: unless-stopped

@@ -67,7 +67,7 @@ If you want that your bot triggers on a some type of messages, there some option
 
 ### Google
 
-If you want your bot triggers on a messages like this
+If you want that your bot triggers on a messages like this
 ```
 Cuttlerat: What is Jenkins?
 Cuttlebot: https://www.google.ru/search?q=Jenkins
@@ -81,7 +81,7 @@ You will need to add a note in your database like this:
 
 All matches must be in a low case! It's important (I will do something with it later)
 
-If you want to ignore some words to trigger this function
+If you don't want any word to trigger this function
 
 ```
 /manage INSERT INTO google_ignore(ignore) VALUES("Jenkins")
@@ -91,7 +91,7 @@ Cuttlerat: What is Jenkins?
 
 ### Simple trigger
 
-If you want a simple trigger on a message with your specified string
+If you want a simple trigger on a message responding with your specified string
 
 ```
 /manage INSERT INTO answers(match,string) VALUES("hello!", "Hi!")
@@ -109,7 +109,7 @@ Cuttlerat: rat!
 *nothing*
 ```
 
-Why? Because we didnt set a ping phrase
+Why? Because we didn't set a ping phrase yet
 
 ```
 /manage INSERT INTO ping_phrases(phrase) VALUES("ping")
@@ -117,7 +117,7 @@ Cuttlerat: ping rat
 Cuttlebot: @Cuttlerat
 ```
 
-There is a little trick to summon all persons in the pingers table
+There is a little trick to summon all persons from the pingers table
 
 ```
 /manage INSERT INTO pingers(username,match) VALUES("hotkosc", "kosc")
@@ -126,7 +126,7 @@ Cuttlerat: ping all
 Cuttlebot: @Cuttlerat @hotkosc
 ```
 
-But if you want to call all except one guy?
+But what if you want to call everyone except one guy?
 
 You will need to add a ping exclude phrase
 
