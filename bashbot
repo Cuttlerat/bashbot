@@ -91,7 +91,55 @@ function _get_default_city {
                            FROM locations
                            WHERE username=\"default_city\""
 
-}    # ----------  end of function _weather_request  ----------
+}    # ----------  end of function _get_default_city  ----------
+
+#===  FUNCTION  ================================================================
+#          NAME:  _get_emoji
+#   DESCRIPTION:  Get the emoji for weather
+#    PARAMETERS:  $1 - Weather code
+#===============================================================================
+function _get_emoji {
+
+    read WEATHER_CODE
+    case $WEATHER_CODE in 
+
+        113) 
+            echo "☀️" 
+            ;; # Sunny
+        116) 
+            echo "🌥" 
+            ;; # Partly cloudy
+        119)
+            echo "⛅️"
+            ;; # Cloudy
+        122)
+            echo "☁️"
+            ;; # Overcast
+        143|248|260) 
+            echo "🌫" 
+            ;;  # Fog
+        176|263|266|281|293|296|299|\
+        302|311|317|362) 
+            echo "🌧" 
+            ;; # Light rain
+        179|182|185|227|230|323|326|\
+        329|332|335|338|350|353|368|\
+        371|374|377) 
+            echo "🌨"
+            ;; # Snow
+        200) 
+            echo "🌩"
+            ;; # Thunder
+        284|305|308|314|320|356|359|365)
+            echo "🌧"
+            ;; # Heavy rain
+        386|389|392|395)
+            echo "⛈"
+            ;; # Rain with thunder
+
+    esac
+
+}    # ----------  end of function _get_emoji  ----------
 
 #===  FUNCTION  ================================================================
 #          NAME:  _ibash
@@ -353,6 +401,7 @@ while sleep 1; do
                     COMMENT=$( jq -r .data.current_condition[0].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 UPDATE_TIME=$( jq -r .data.current_condition[0].observation_time <<< "${RAW_WEATHER}" |\
                                xargs -i date -d 'TZ="UTC" {}' +"%H:%M" 2>/dev/null )
+                  NOW_EMOJI=$( jq -r .data.current_condition[0].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
 
                   MORNING_C=$( jq -r .data.weather[0].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                      NOON_C=$( jq -r .data.weather[0].hourly[5].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -360,6 +409,9 @@ while sleep 1; do
                 MORNING_CMT=$( jq -r .data.weather[0].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
                    NOON_CMT=$( jq -r .data.weather[0].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
                 EVENING_CMT=$( jq -r .data.weather[0].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
+              MORNING_EMOJI=$( jq -r .data.weather[0].hourly[2].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
+                 NOON_EMOJI=$( jq -r .data.weather[0].hourly[5].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
+              EVENING_EMOJI=$( jq -r .data.weather[0].hourly[8].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
 
                 T_MORNING_C=$( jq -r .data.weather[1].hourly[2].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
                    T_NOON_C=$( jq -r .data.weather[1].hourly[5].tempC            <<< "${RAW_WEATHER}" | sed '/^[0-9]/s/^/+/' )
@@ -367,11 +419,15 @@ while sleep 1; do
               T_MORNING_CMT=$( jq -r .data.weather[1].hourly[2].lang_ru[0].value <<< "${RAW_WEATHER}" )
                  T_NOON_CMT=$( jq -r .data.weather[1].hourly[5].lang_ru[0].value <<< "${RAW_WEATHER}" )
               T_EVENING_CMT=$( jq -r .data.weather[1].hourly[8].lang_ru[0].value <<< "${RAW_WEATHER}" )
+            T_MORNING_EMOJI=$( jq -r .data.weather[1].hourly[2].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
+               T_NOON_EMOJI=$( jq -r .data.weather[1].hourly[5].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
+            T_EVENING_EMOJI=$( jq -r .data.weather[1].hourly[8].weatherCode      <<< "${RAW_WEATHER}" | _get_emoji )
 
 
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
+                    PARSE_MODE="none"
                     if [[ ! -z ${ARGS} ]]; then 
                         TEXT="Wrong location!"
                     elif [[ "${ADMINS[*]}" =~ ${SENDER} ]]; then
@@ -386,18 +442,18 @@ while sleep 1; do
                 else
                     TEXT=$( echo -e \
                     "*Now:*
-                     *[${UPDATE_TIME}]:* ${TEMP} ${COMMENT}
+                     *[${UPDATE_TIME}]:* ${TEMP} ${NOW_EMOJI} ${COMMENT}
                      ${CITY}
 
                      *Today:*
-                     *Morning:* ${MORNING_C} ${MORNING_CMT}
-                     *Noon:* ${NOON_C} ${NOON_CMT}
-                     *Evening:* ${EVENING_C} ${EVENING_CMT} 
+                     *Morning:* ${MORNING_C} ${MORNING_EMOJI} ${MORNING_CMT}
+                     *Noon:* ${NOON_C} ${NOON_EMOJI} ${NOON_CMT}
+                     *Evening:* ${EVENING_C} ${EVENING_EMOJI} ${EVENING_CMT} 
 
                      *Tommorow:* 
-                     *Morning:* ${T_MORNING_C} ${T_MORNING_CMT}
-                     *Noon:* ${T_NOON_C} ${T_NOON_CMT}
-                     *Evening:* ${T_EVENING_C} ${T_EVENING_CMT} 
+                     *Morning:* ${T_MORNING_C} ${T_MORNING_EMOJI} ${T_MORNING_CMT}
+                     *Noon:* ${T_NOON_C} ${T_NOON_EMOJI} ${T_NOON_CMT}
+                     *Evening:* ${T_EVENING_C} ${T_EVENING_EMOJI} ${T_EVENING_CMT} 
                      ")
                 fi
 
