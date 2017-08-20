@@ -427,6 +427,7 @@ while sleep 1; do
 
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
+                    PARSE_MODE="none"
                     if [[ ! -z ${ARGS} ]]; then 
                         TEXT="Wrong location!"
                     elif [[ "${ADMINS[*]}" =~ ${SENDER} ]]; then
