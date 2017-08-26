@@ -1,4 +1,4 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 #===============================================================================
 #
 #    DESCRIPTION: Telegram bot in bash
@@ -11,7 +11,7 @@
 
 #===  CHECKING TOKENS FILE  ====================================================
 
-[[ -f ./tokens ]] && . ./tokens 
+[[ -f ./tokens ]] && . ./tokens
 
 #===  CONSTANTS  ===============================================================
 
@@ -41,7 +41,7 @@ function _usage ()
 
   Github:  https://github.com/Cuttlerat/bashbot
 
-  Options: 
+  Options:
   -h|help       Display this message
 
 	EOF
@@ -61,7 +61,7 @@ function _send_text {
             --data-urlencode "text=${TEXT}"                                   \
                       --data "chat_id=${CHAT_ID}"                             \
                       --data "disable_web_page_preview=${PREVIEW}"            \
-                      --data "parse_mode=${PARSE_MODE}"                     
+                      --data "parse_mode=${PARSE_MODE}"
 
 }    # ----------  end of function _send_text  ----------
 
@@ -77,7 +77,7 @@ function _weather_request {
                             --data "format=json"                              \
                             --data "num_of_days=2"                            \
                             --data "fx24=yes"                                 \
-                            --data "lang=ru"                                
+                            --data "lang=ru"
 
 }    # ----------  end of function _weather_request  ----------
 
@@ -87,7 +87,7 @@ function _weather_request {
 #===============================================================================
 function _get_default_city {
 
-    sqlite3 "${DATABASE}" "SELECT city 
+    sqlite3 "${DATABASE}" "SELECT city
                            FROM locations
                            WHERE username=\"default_city\""
 
@@ -101,13 +101,13 @@ function _get_default_city {
 function _get_emoji {
 
     read WEATHER_CODE
-    case $WEATHER_CODE in 
+    case $WEATHER_CODE in
 
-        113) 
-            echo "☀️" 
+        113)
+            echo "☀️"
             ;; # Sunny
-        116) 
-            echo "🌥" 
+        116)
+            echo "🌥"
             ;; # Partly cloudy
         119)
             echo "⛅️"
@@ -115,19 +115,19 @@ function _get_emoji {
         122)
             echo "☁️"
             ;; # Overcast
-        143|248|260) 
-            echo "🌫" 
+        143|248|260)
+            echo "🌫"
             ;;  # Fog
         176|263|266|281|293|296|299|\
-        302|311|317|362) 
-            echo "🌧" 
+        302|311|317|362)
+            echo "🌧"
             ;; # Light rain
         179|182|185|227|230|323|326|\
         329|332|335|338|350|353|368|\
-        371|374|377) 
+        371|374|377)
             echo "🌨"
             ;; # Snow
-        200) 
+        200)
             echo "🌩"
             ;; # Thunder
         284|305|308|314|320|356|359|365)
@@ -163,7 +163,7 @@ function _loglist {
 
                TEXT="$( curl -sL https://loglist.net/api/quote/random        |\
                         jq -r .id,.content                                   |\
-                        sed '1s/^/#/' )"                              
+                        sed '1s/^/#/' )"
                _send_text "${TEXT}" 1>&2
 
 }    # ----------  end of function _loglist  ----------
@@ -223,13 +223,13 @@ do
 
     ? )  _usage; exit 1  ;;
 
-  esac    
+  esac
 done
 shift $((OPTIND-1))
 
 #===  DATABASE CHECKING  =======================================================
 
-if [[ ! -w "${DATABASE}" ]]; then 
+if [[ ! -w "${DATABASE}" ]]; then
     touch "${DATABASE}"
     chmod 600 "${DATABASE}"
 fi
@@ -296,24 +296,24 @@ while sleep 1; do
           #-------------------------------------------------------------------------------
             if [[ $( sqlite3 "${DATABASE}"                                                               \
                "SELECT EXISTS(
-                    SELECT 1 FROM google_ignore 
-                    WHERE \"${MESSAGE,,}\" 
+                    SELECT 1 FROM google_ignore
+                    WHERE \"${MESSAGE,,}\"
                     LIKE '%'||google_ignore.ignore||'%'
                     ) LIMIT 1;" ) -eq 0 ]]                                                               \
                &&                                                                                        \
                [[ $( sqlite3 "${DATABASE}"                                                               \
                "SELECT EXISTS(
-                    SELECT 1 FROM google 
-                    WHERE \"${MESSAGE,,}\" 
+                    SELECT 1 FROM google
+                    WHERE \"${MESSAGE,,}\"
                     LIKE '%'||google.match||'%'
                     ) LIMIT 1;" ) -eq 1 ]]; then
 
                     MATCH=$( sqlite3 "${DATABASE}"                                                       \
-                            "SELECT * FROM google 
-                             WHERE \"${MESSAGE,,}\" 
+                            "SELECT * FROM google
+                             WHERE \"${MESSAGE,,}\"
                              LIKE '%'||google.match||'%';"                                               |\
                              awk '{printf length; printf " "; print $0}'                                 |\
-                             sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                        ) 
+                             sort -rn | awk '{$1=""; print $0}' | head -1 | xargs                        )
 
                     MESSAGE=$( sed -r "s#${MATCH}(\s*\S+)#/google\1#i"             <<< "${MESSAGE}"      )
                 fi
@@ -334,8 +334,8 @@ while sleep 1; do
           #-------------------------------------------------------------------------------
             if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                      \
                                                                "SELECT EXISTS(
-                                                                    SELECT 1 FROM ping_phrases 
-                                                                    WHERE \"${R_MESSAGE}\" 
+                                                                    SELECT 1 FROM ping_phrases
+                                                                    WHERE \"${R_MESSAGE}\"
                                                                     LIKE '%'||ping_phrases.phrase||'%'
                                                                     ) LIMIT 1;"                           )\
                   -eq 1 ]]; then
@@ -348,7 +348,7 @@ while sleep 1; do
             if [[ ! "${MESSAGE}" =~ ^/[a-zA-Z0-9]+ ]] && [[ $( sqlite3 "${DATABASE}"                      \
                                                                "SELECT EXISTS(
                                                                     SELECT 1 FROM answers
-                                                                    WHERE \"${R_MESSAGE}\" 
+                                                                    WHERE \"${R_MESSAGE}\"
                                                                     LIKE '%'||answers.match||'%'
                                                                     ) LIMIT 1"                            )\
                   -eq 1 ]]; then
@@ -384,15 +384,15 @@ while sleep 1; do
                                               LIKE locations.username
                                               ) LIMIT 1;"                                             \
                                          ) -eq 1 ]] && \
-                ARGS=$( sqlite3 "${DATABASE}" "SELECT city 
-                                              FROM locations 
-                                              WHERE \"${SENDER}\" 
+                ARGS=$( sqlite3 "${DATABASE}" "SELECT city
+                                              FROM locations
+                                              WHERE \"${SENDER}\"
                                               LIKE locations.username;"                               )
 
                 RAW_WEATHER=$( _weather_request )
                        CITY=$( jq -r .data.request[0].query                      <<< "${RAW_WEATHER}" )
 
-                   [ "${CITY}" == "" -o "${CITY}" == "null" ] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break 
+                   [ "${CITY}" == "" -o "${CITY}" == "null" ] && [[ "${WEATHER_API_CRUTCH}" == "true" ]] && break
                    [ "${CITY}" == "" -o "${CITY}" == "null" ] && WEATHER_API_CRUTCH=true
 
                done
@@ -428,13 +428,13 @@ while sleep 1; do
                 if [[ "${CITY}" == "null" ]] || [[ "${CITY}" == "" ]]
                 then
                     PARSE_MODE="none"
-                    if [[ ! -z ${ARGS} ]]; then 
+                    if [[ ! -z ${ARGS} ]]; then
                         TEXT="Wrong location!"
                     elif [[ "${ADMINS[*]}" =~ ${SENDER} ]]; then
                         TEXT="You didn't set the default city
                               You can add default city by this command:
                               /manage insert into locations(username,city) values(\"default_city\",\"YOUR CITY HERE\")"
-                            
+
                     else
                         TEXT="Administrator didn't set the default city
                               Try /w City"
@@ -448,23 +448,23 @@ while sleep 1; do
                      *Today:*
                      *Morning:* ${MORNING_C} ${MORNING_EMOJI} ${MORNING_CMT}
                      *Noon:* ${NOON_C} ${NOON_EMOJI} ${NOON_CMT}
-                     *Evening:* ${EVENING_C} ${EVENING_EMOJI} ${EVENING_CMT} 
+                     *Evening:* ${EVENING_C} ${EVENING_EMOJI} ${EVENING_CMT}
 
-                     *Tommorow:* 
+                     *Tommorow:*
                      *Morning:* ${T_MORNING_C} ${T_MORNING_EMOJI} ${T_MORNING_CMT}
                      *Noon:* ${T_NOON_C} ${T_NOON_EMOJI} ${T_NOON_CMT}
-                     *Evening:* ${T_EVENING_C} ${T_EVENING_EMOJI} ${T_EVENING_CMT} 
+                     *Evening:* ${T_EVENING_C} ${T_EVENING_EMOJI} ${T_EVENING_CMT}
                      ")
                 fi
 
                 _send_text "${TEXT}"
-                _log_echo "Weather \"${CITY}\" to @${SENDER}"                               
+                _log_echo "Weather \"${CITY}\" to @${SENDER}"
                 ;;
 
         #===  COMMAND  =================================================================
         #          NAME:  /info
         #   DESCRIPTION:  Information about this bot
-        #    PARAMETERS:  
+        #    PARAMETERS:
         #===============================================================================
            /info)
 
@@ -478,7 +478,7 @@ while sleep 1; do
         #===  COMMAND  =================================================================
         #          NAME:  /start
         #   DESCRIPTION:  List of commands
-        #    PARAMETERS:  
+        #    PARAMETERS:
         #===============================================================================
            /start)
 
@@ -486,16 +486,16 @@ while sleep 1; do
                      Commands:
                      /weather <City>     - Weather in a city for now, today and tommorow
                      /w <City>           - Short form of /w
-                     /info               - Information about this bot  
+                     /info               - Information about this bot
                      /wset <City>        - Set default city for /weather
                      /ibash <Number>     - Random quote from ibash.org.ru
                      /loglist <Number>   - Random quote from loglist.net
                      /roll               - Rolling a random number from 0 to 99
-                     /google <String>    - Send a link to google.com/String 
-                     /md5 <String>       - Creating a md5 sum of String 
+                     /google <String>    - Send a link to google.com/String
+                     /md5 <String>       - Creating a md5 sum of String
                      /manage <SQL query> - Manage your database (Only for admins)
                      " )
-                    
+
                _send_text "${TEXT}"
                ;;
 
@@ -521,12 +521,12 @@ while sleep 1; do
 
         #===  COMMAND  =================================================================
         #          NAME:  /wset
-        #   DESCRIPTION:  Configure a default city for /weather command 
+        #   DESCRIPTION:  Configure a default city for /weather command
         #                 for user who call it
         #    PARAMETERS:  City or "Delete"
         #===============================================================================
            /wset)
-                
+
                 if [[ $(sqlite3 "${DATABASE}"                                     \
                                      "SELECT EXISTS(
                                           SELECT 1 FROM locations
@@ -542,7 +542,7 @@ while sleep 1; do
                         TEXT="Deleted information about @${SENDER}"
                     else
                         sqlite3 "${DATABASE}"                                     \
-                            "UPDATE locations 
+                            "UPDATE locations
                              SET city=\"${ARGS}\"
                              WHERE username=\"${SENDER}\""
                         TEXT="New city for @${SENDER}: ${ARGS}"
@@ -590,8 +590,8 @@ while sleep 1; do
 
         #===  COMMAND  =================================================================
         #          NAME:  /show
-        #   DESCRIPTION:  Sending a Rick and Morty yotube video 
-        #    PARAMETERS:  
+        #   DESCRIPTION:  Sending a Rick and Morty yotube video
+        #    PARAMETERS:
         #===============================================================================
            /show)
 
@@ -605,10 +605,10 @@ while sleep 1; do
         #===  COMMAND  =================================================================
         #          NAME:  /roll
         #   DESCRIPTION:  Rolling a random number from 0 to 99
-        #    PARAMETERS:  
+        #    PARAMETERS:
         #===============================================================================
            /roll)
-           
+
                ARGS=$( sed 's/.*[^0-9].*/100/' <<< "${ARGS:-100}" )
                TEXT=$(( RANDOM % ARGS ))
                _send_text "${TEXT}"
@@ -618,23 +618,23 @@ while sleep 1; do
         #===  COMMAND  =================================================================
         #          NAME:  /ping
         #   DESCRIPTION:  This is not for direct call. This command uses
-        #                 to call a user by a regular expression stroed into 
+        #                 to call a user by a regular expression stroed into
         #                 ${DATABASE}
         #    PARAMETERS:  String
         #===============================================================================
            /ping)
-               
+
 
                TEXT=$( sqlite3 "${DATABASE}"                            \
-                   "SELECT DISTINCT username 
-                    FROM pingers 
-                    WHERE \"${ARGS,,}\" 
+                   "SELECT DISTINCT username
+                    FROM pingers
+                    WHERE \"${ARGS,,}\"
                     LIKE '%'||pingers.match||'%';"                      )
                if [[ "${TEXT}" =~ EVERYONE\ GET\ IN\ HERE ]]; then
                    if [[ $( sqlite3 "${DATABASE}"                  \
                                "SELECT EXISTS(
-                                    SELECT 1 FROM ping_exclude 
-                                    WHERE \"${ARGS,,}\" 
+                                    SELECT 1 FROM ping_exclude
+                                    WHERE \"${ARGS,,}\"
                                     LIKE '%'||ping_exclude.match||'%'
                                     ) LIMIT 1;"                    )\
                                     -eq 1 ]]; then
@@ -645,9 +645,9 @@ while sleep 1; do
                               NOT LIKE '%'||username||'%'" )
                    else
                    TEXT=$( sqlite3 "${DATABASE}"                        \
-                       "SELECT DISTINCT username 
-                        FROM pingers 
-                        WHERE username 
+                       "SELECT DISTINCT username
+                        FROM pingers
+                        WHERE username
                         NOT LIKE \"EVERYONE GET IN HERE\"
                         AND username
                         NOT LIKE \"${SENDER}\""                             )
@@ -667,15 +667,15 @@ while sleep 1; do
         #===============================================================================
            /answer)
 
-              
-               while read -r TEXT; do                 
+
+               while read -r TEXT; do
                    if [[ ! -z "${TEXT}" ]]; then
                        _send_text "${TEXT}"
                        _log_echo "Answer to \"${SENDER}\""
                    fi
                done < <( sqlite3 "${DATABASE}"                   \
-                           "SELECT string FROM answers 
-                            WHERE \"${ARGS,,}\" 
+                           "SELECT string FROM answers
+                            WHERE \"${ARGS,,}\"
                             LIKE '%'||answers.match||'%';"       )
                ;;
 
@@ -702,15 +702,15 @@ while sleep 1; do
                ;;
 
         #===  COMMAND  =================================================================
-        #          NAME:  
+        #          NAME:
         #   DESCRIPTION:  Default message when user calling incorrect command
         #    PARAMETERS:  String
         #===============================================================================
            /*)
 
-               if [[ ${PRIVATE} == "true" ]] || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then                               
-                   TEXT="Unknown command"                                                   
-                   _send_text "${TEXT}"                                                               
+               if [[ ${PRIVATE} == "true" ]] || [[ $CMD_CHECK =~ /*${BOTNAME} ]]; then
+                   TEXT="Unknown command"
+                   _send_text "${TEXT}"
                    _log_echo "Bad command \"${CMD_CHECK}\" by @${SENDER}"
                fi
                ;;
