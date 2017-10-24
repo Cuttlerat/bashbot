@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This is my CI for https://github.com/Cuttlerat/bashbot
 
@@ -8,15 +8,15 @@
 #===============================================================================
 function _log_echo {
 
-               date +"[%d/%b/%Y:%H:%M:%S %z]: $1" 1>&2
+    local message="$@"
+    date +"[%d/%b/%Y:%H:%M:%S %z]: ${message[@]}" 1>&2
 
 }    # ----------  end of function _log_echo  ----------
 
 cd /bashbot
 
-while :; do
-    _log_echo "Waiting for updates"
-    inotifywait -e modify ./bashbot &>/dev/null
+while _log_echo "Waiting for updates" &&\
+      inotifywait -e modify ./bashbot &>/dev/null; do
 
     _log_echo "Building new bashbot"
     docker-compose build bashbot &>/dev/null       \
